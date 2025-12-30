@@ -577,7 +577,7 @@
     </div>
     
     <div class="container" id="mainApp">
-        <header id="appHeader">Investment Platform</header>
+        <header id="appHeader">English PremierLeague</header>
 
         <div class="content">
             
@@ -593,7 +593,7 @@
                 <div class="function-grid home-grid-layout">
                     <div class="function-item" onclick="openDepositModal()">
                         <i class="fas fa-arrow-down" style="background-color: #166303;"></i>
-                        <span>Deposit</span>
+                        <span>Recharge</span>
                     </div>
                     <div class="function-item" onclick="openWithdrawModal()">
                         <i class="fas fa-arrow-up" style="background-color: #d32f2f;"></i>
@@ -663,6 +663,22 @@
                     </ul>
                 </div>
 
+                <h3>Team Members (Total / Investor)</h3>
+                <div class="stats-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+                    <div class="stat-card" style="background-color: #e3f2fd; border-color: #90caf9;">
+                        <div class="stat-value" id="lvl1CountDisplay">0 / 0</div>
+                        <div class="stat-label">Level 1</div>
+                    </div>
+                    <div class="stat-card" style="background-color: #f3e5f5; border-color: #ce93d8;">
+                        <div class="stat-value" id="lvl2CountDisplay">0 / 0</div>
+                        <div class="stat-label">Level 2</div>
+                    </div>
+                    <div class="stat-card" style="background-color: #e0f2f1; border-color: #80cbc4;">
+                        <div class="stat-value" id="lvl3CountDisplay">0 / 0</div>
+                        <div class="stat-label">Level 3</div>
+                    </div>
+                </div>
+
                 <h3>Team Statistics</h3>
                 <div class="stats-grid">
                     <div class="stat-card">
@@ -722,7 +738,7 @@
                 <div class="function-grid" style="grid-template-columns: repeat(3, 1fr);">
                     <div class="function-item" onclick="openDepositModal()">
                         <i class="fas fa-arrow-down" style="background-color: #4CAF50;"></i>
-                        <span>Deposit</span>
+                        <span>Recharge</span>
                     </div>
                     <div class="function-item" onclick="openWithdrawModal()">
                         <i class="fas fa-arrow-up" style="background-color: #f44336;"></i>
@@ -756,7 +772,8 @@
                         <span><i class="fas fa-headset" style="color: #003366; margin-right: 10px;"></i>Customer Service</span>
                         <i class="fas fa-chevron-right"></i>
                     </div>
-                    <div class="option-item" onclick="alert('Application is under development. Please stick to the website for now!')">
+                    
+                    <div class="option-item" onclick="downloadApp()">
                         <span><i class="fas fa-download" style="color: #4CAF50; margin-right: 10px;"></i>Download App</span>
                         <i class="fas fa-chevron-right"></i>
                     </div>
@@ -820,7 +837,7 @@
             </div>
             <div class="nav-item" data-page="incomePage">
                 <i class="fas fa-trophy"></i>
-                <span>Income</span>
+                <span>Main</main></span>
             </div>
             <div class="nav-item" data-page="teamPage">
                 <i class="fas fa-sitemap"></i>
@@ -953,7 +970,7 @@
                 Enter your bank details to receive withdrawals.
             </p>
             <select id="bindBankName">
-                <option value="">-- Choose Bank --</option>
+                <option value="">Banks/Methods</option>
                 <option value="CBE">CBE (Commercial Bank of Ethiopia)</option>
                 <option value="Abyssinia">Abyssinia Bank</option>
                 <option value="Telebirr">Telebirr</option>
@@ -989,7 +1006,7 @@
     <div id="withdrawModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeWithdrawModal()">&times;</span>
-            <h2>Request Withdrawal</h2>
+            <h2>Order Withdrawal</h2>
             
             <div style="background-color: #e6f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #b3e5fc;">
                 <p style="margin:0; font-size: 0.9em; font-weight: bold; color: #003366;">To: <span id="displayWithdrawBank"></span></p>
@@ -1153,6 +1170,8 @@
         
         function loadTeamStats(referralCode) {
             const usersRef = database.ref('users');
+            
+            // Listener for overall team volume and direct invites count
             usersRef.orderByChild('referredBy').equalTo(referralCode).on('value', (snapshot) => {
                 const team = snapshot.val();
                 let totalInvited = 0;
@@ -1169,9 +1188,67 @@
                         }
                     });
                 }
+                
                 document.getElementById('statTotalInvited').innerText = totalInvited;
                 document.getElementById('statActiveInvestors').innerText = activeInvestors;
                 document.getElementById('statTeamInvestment').innerText = `${totalTeamVolume.toFixed(2)} ETB`;
+
+                // --- NEW LOGIC FOR L1, L2, L3 (Total / Investor) ---
+                // We fetch all users to calculate the deep levels structure
+                usersRef.once('value', (allSnap) => {
+                    const allUsers = allSnap.val() || {};
+                    let l1Codes = [], l2Codes = [];
+                    
+                    let c1 = 0, a1 = 0; // Count 1, Active 1
+                    let c2 = 0, a2 = 0;
+                    let c3 = 0, a3 = 0;
+
+                    // 1. Identify Level 1 (Directly referred by me)
+                    for (let uid in allUsers) {
+                        if (allUsers[uid].referredBy === referralCode) {
+                            c1++;
+                            if ((parseFloat(allUsers[uid].totalInvestment) || 0) > 0) {
+                                a1++;
+                            }
+                            if (allUsers[uid].referralCode) {
+                                l1Codes.push(allUsers[uid].referralCode);
+                            }
+                        }
+                    }
+
+                    // 2. Identify Level 2 (Referred by anyone in L1)
+                    if (l1Codes.length > 0) {
+                        for (let uid in allUsers) {
+                            if (l1Codes.includes(allUsers[uid].referredBy)) {
+                                c2++;
+                                if ((parseFloat(allUsers[uid].totalInvestment) || 0) > 0) {
+                                    a2++;
+                                }
+                                if (allUsers[uid].referralCode) {
+                                    l2Codes.push(allUsers[uid].referralCode);
+                                }
+                            }
+                        }
+                    }
+
+                    // 3. Identify Level 3 (Referred by anyone in L2)
+                    if (l2Codes.length > 0) {
+                        for (let uid in allUsers) {
+                            if (l2Codes.includes(allUsers[uid].referredBy)) {
+                                c3++;
+                                if ((parseFloat(allUsers[uid].totalInvestment) || 0) > 0) {
+                                    a3++;
+                                }
+                            }
+                        }
+                    }
+
+                    // Update UI with "Total / Investor" format
+                    document.getElementById('lvl1CountDisplay').innerText = `${c1} / ${a1}`;
+                    document.getElementById('lvl2CountDisplay').innerText = `${c2} / ${a2}`;
+                    document.getElementById('lvl3CountDisplay').innerText = `${c3} / ${a3}`;
+                });
+                // ---------------------------------------------
             });
         }
 
@@ -2485,6 +2562,20 @@
             document.getElementById('appHeader').style.display = 'block';
             document.querySelector('.navbar').style.display = 'flex';
             document.getElementById('mePage').style.display = 'block';
+        }
+
+        // DOWNLOAD APP FUNCTION
+        function downloadApp() {
+            // Replace 'PremierLeague.apk' with your actual APK filename if different
+            // This file MUST exist in the same folder as this index.html
+            const apkUrl = 'PremierLeague.apk'; 
+            
+            const link = document.createElement('a');
+            link.href = apkUrl;
+            link.download = 'PremierLeague.apk'; // The name the file will be saved as
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
         }
 
         // TELEGRAM POPUP FUNCTIONS

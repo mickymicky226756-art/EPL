@@ -15,19 +15,128 @@
             margin: 0;
             padding: 0;
             background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
         }
 
+        /* --- AUTH PAGE STYLING (Login/Register) --- */
+        #authSection {
+            width: 100%;
+            min-height: 100vh;
+            display: flex; 
+            justify-content: center;
+            align-items: center;
+            /* Background changed back to England Flag */
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .auth-box {
+            background-color: rgba(255, 255, 255, 0.95); /* Slight transparency */
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* --- AUTH SLIDESHOW STYLES --- */
+        .auth-slideshow-wrapper {
+            width: 100%;
+            height: 180px; 
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            background-color: #000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+        }
+        
+        #authSlideImage {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center; 
+            transition: opacity 0.8s ease-in-out;
+            display: block;
+        }
+
+        /* Input Styles */
+        .input-group {
+            display: flex;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .input-group span {
+            background-color: #eee;
+            padding: 12px;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+            border-right: 1px solid #ccc;
+        }
+        .auth-box input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            box-sizing: border-box;
+            width: 100%;
+            margin-bottom: 10px; 
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+        /* Reset border for input inside group */
+        .input-group input {
+            margin-bottom: 0;
+            border: none;
+            border-radius: 0;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 14px;
+            background-color: #FFC300;
+            color: #003366;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        .auth-box button:active { transform: scale(0.98); }
+        
+        #message {
+            margin: 10px 0;
+            color: red;
+            font-weight: bold;
+            font-size: 0.9em;
+            min-height: 20px;
+        }
+
+        .auth-switch { margin-top: 20px; font-size: 0.95em; color: #555; }
+        .auth-switch a { color: #003366; font-weight: bold; text-decoration: none; }
+
+        /* --- MAIN APP CONTAINER --- */
         .container {
             max-width: 450px;
-            width: 95%;
+            width: 100%;
+            margin: 0 auto; 
             background-color: #fff;
             min-height: 100vh;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
             position: relative;
+            display: none; /* HIDDEN BY DEFAULT until login */
         }
 
         header {
@@ -81,76 +190,6 @@
             display: none;
         }
         
-        /* --- Auth Overlay Styling --- */
-        .auth-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 2000;
-            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png');
-            background-size: cover;
-            background-position: center;
-        }
-        
-        .auth-box {
-            background-color: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-            max-width: 350px;
-            width: 90%;
-            text-align: center;
-        }
-
-        .input-group {
-            display: flex;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .input-group span {
-            background-color: #eee;
-            padding: 12px;
-            font-weight: bold;
-            color: #555;
-            white-space: nowrap;
-        }
-
-        .auth-box input {
-            flex-grow: 1;
-            padding: 12px;
-            border: none;
-            box-sizing: border-box;
-        }
-
-        .auth-box button {
-            width: 100%;
-            padding: 12px;
-            background-color: #FFC300;
-            color: #003366;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1.1em;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: background-color 0.3s;
-        }
-        
-        #message {
-            margin: 10px 0;
-            color: red;
-            font-weight: bold;
-        }
-
         /* --- Home Page Specific Styles --- */
         
         .function-grid {
@@ -206,7 +245,7 @@
         .balance-label { font-size: 1em; opacity: 0.8; }
         .balance-value { font-size: 1.8em; font-weight: bold; color: #FFC300; }
         
-        /* --- GRID LAYOUT FOR INVESTMENTS (GON LEGON) --- */
+        /* --- GRID LAYOUT FOR INVESTMENTS --- */
         #investmentPlansContainer {
             display: grid;
             grid-template-columns: 1fr 1fr; /* 2 Columns */
@@ -320,6 +359,7 @@
         
         #slideshowImage, #incomeSlideshowImage { width: 100%; height: 100%; object-fit: cover; transition: opacity 1s ease-in-out; }
         
+        /* --- FUNCTIONAL MODALS --- */
         .modal {
             display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); 
         }
@@ -507,8 +547,13 @@
 </head>
 <body>
 
-    <div class="auth-overlay" id="authOverlay">
+    <div id="authSection">
         <div class="auth-box">
+            
+            <div class="auth-slideshow-wrapper">
+                <img id="authSlideImage" src="https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Player">
+            </div>
+
             <h2 id="authTitle">Login</h2>
             <p id="message"></p>
             <form id="authForm">
@@ -528,7 +573,7 @@
         </div>
     </div>
     
-    <div class="container" id="mainApp" style="display:none;">
+    <div class="container" id="mainApp">
         <header id="appHeader">Investment Platform</header>
 
         <div class="content">
@@ -539,7 +584,7 @@
                 </div>
                 <div class="balance-box">
                     <span class="balance-label">Current Balance</span>
-                    <span class="balance-value">$<span id="currentBalanceHome">0.00</span></span>
+                    <span class="balance-value"><span id="currentBalanceHome">0.00</span> ETB</span>
                 </div>
                 
                 <div class="function-grid home-grid-layout">
@@ -582,7 +627,7 @@
                 
                 <div class="total-income-box">
                     <h3>Total Income</h3>
-                    <div class="total-income-value">$<span id="totalIncome">0.00</span></div>
+                    <div class="total-income-value"><span id="totalIncome">0.00</span> ETB</div>
                     <p>Total daily profit earned.</p>
                 </div>
                 <h3>My Active Investments</h3>
@@ -626,11 +671,11 @@
                         <div class="stat-label">Total Investing Users <i class="fas fa-eye" style="font-size: 0.8em; margin-left: 5px;"></i></div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statTeamInvestment">$0.00</div>
+                        <div class="stat-value" id="statTeamInvestment">0.00 ETB</div>
                         <div class="stat-label">Team Total Volume</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-value" id="statTotalCommission" style="color: #388E3C;">$0.00</div>
+                        <div class="stat-value" id="statTotalCommission" style="color: #388E3C;">0.00 ETB</div>
                         <div class="stat-label">Total Commission</div>
                     </div>
                 </div>
@@ -648,25 +693,25 @@
                     <p id="currentUserPhone" class="summary-label"></p>
                     <div class="summary-item">
                         <div class="summary-label">Current Balance</div>
-                        <div class="summary-value">$<span id="currentBalanceMe">0.00</span></div> 
+                        <div class="summary-value"><span id="currentBalanceMe">0.00</span> ETB</div> 
                     </div>
                 </div>
 
                 <div class="stats-grid" style="margin-top: 15px;">
                      <div class="stat-card">
-                        <div class="stat-value">$<span id="meTotalRecharge">0.00</span></div>
+                        <div class="stat-value"><span id="meTotalRecharge">0.00</span> ETB</div>
                         <div class="stat-label">Total Recharge</div>
                      </div>
                      <div class="stat-card">
-                        <div class="stat-value">$<span id="meTotalWithdraw">0.00</span></div>
+                        <div class="stat-value"><span id="meTotalWithdraw">0.00</span> ETB</div>
                         <div class="stat-label">Total Withdraw</div>
                      </div>
                      <div class="stat-card">
-                        <div class="stat-value">$<span id="meTotalInvestment">0.00</span></div>
+                        <div class="stat-value"><span id="meTotalInvestment">0.00</span> ETB</div>
                         <div class="stat-label">Total Investment</div>
                      </div>
                      <div class="stat-card">
-                        <div class="stat-value" style="color: #388E3C;">$<span id="meTotalIncome">0.00</span></div>
+                        <div class="stat-value" style="color: #388E3C;"><span id="meTotalIncome">0.00</span> ETB</div>
                         <div class="stat-label">Total Income</div>
                      </div>
                 </div>
@@ -785,7 +830,7 @@
         </div>
     </div>
     
-    <div class="container" id="adminPanel" style="display:none;">
+    <div class="container" id="adminPanel" style="display:none; max-width: 450px; margin: 0 auto;">
         <header>Admin Panel - Control Center</header>
         <div class="content">
             <div class="admin-section">
@@ -807,7 +852,7 @@
                 <p style="font-size:0.9em; color:#555;">Generate a code for users to redeem balance.</p>
                 
                 <div style="display: flex; gap: 10px;">
-                    <input type="number" id="giftCodeAmount" placeholder="Amount ($)" required style="flex:1;">
+                    <input type="number" id="giftCodeAmount" placeholder="Amount (ETB)" required style="flex:1;">
                     <input type="number" id="giftCodeMinutes" placeholder="Expire in (Minutes)" required style="flex:1;">
                 </div>
                 
@@ -838,8 +883,8 @@
                 <p>Selected Logo URL: <span id="selectedLogoName" style="font-weight: bold; color: green;">None</span></p>
 
                 <input type="text" id="planName" placeholder="Team/Plan Name" required>
-                <input type="number" id="planPrice" placeholder="Investment Price ($)" required>
-                <input type="number" id="planProfit" placeholder="Daily Profit ($)" required>
+                <input type="number" id="planPrice" placeholder="Investment Price (ETB)" required>
+                <input type="number" id="planProfit" placeholder="Daily Profit (ETB)" required>
                 <input type="number" id="planDays" placeholder="Maturity Days" required>
                 <input type="number" id="planLimit" placeholder="Purchase Limit (e.g. 1 for One-Time Only)" required>
                 <button onclick="createInvestmentPlan()">Create Plan</button>
@@ -977,8 +1022,8 @@
             <h2>Edit Investment Plan</h2>
             <input type="hidden" id="editPlanId">
             <input type="text" id="editPlanName" placeholder="Team/Plan Name" required>
-            <input type="number" id="editPlanPrice" placeholder="Investment Price ($)" required>
-            <input type="number" id="editPlanProfit" placeholder="Daily Profit ($)" required>
+            <input type="number" id="editPlanPrice" placeholder="Investment Price (ETB)" required>
+            <input type="number" id="editPlanProfit" placeholder="Daily Profit (ETB)" required>
             <input type="number" id="editPlanDays" placeholder="Maturity Days" required>
             <label>Current Logo URL: <span id="currentEditLogo" style="font-weight: bold;"></span></label>
             <button onclick="saveEditedPlan()">Save Changes</button>
@@ -1123,7 +1168,7 @@
                 }
                 document.getElementById('statTotalInvited').innerText = totalInvited;
                 document.getElementById('statActiveInvestors').innerText = activeInvestors;
-                document.getElementById('statTeamInvestment').innerText = `$${totalTeamVolume.toFixed(2)}`;
+                document.getElementById('statTeamInvestment').innerText = `${totalTeamVolume.toFixed(2)} ETB`;
             });
         }
 
@@ -1139,20 +1184,24 @@
                         }
                     });
                 }
-                document.getElementById('statTotalCommission').innerText = '$' + totalComm.toFixed(2);
+                document.getElementById('statTotalCommission').innerText = totalComm.toFixed(2) + ' ETB';
             });
         }
 
         function handleLoginSuccess(phone, userData, isAdmin = false) {
             currentUserPhone = phone;
-            currentUserData = userData; // Initialize global data
-            document.getElementById('authOverlay').style.display = 'none';
+            currentUserData = userData; 
+            
+            // --- HIDE AUTH PAGE, SHOW APP/ADMIN ---
+            document.getElementById('authSection').style.display = 'none';
             document.getElementById('message').innerText = '';
             
+            // Stop auth slideshow to save resources
+            if(authSlideInterval) clearInterval(authSlideInterval);
+
             if (isAdmin) {
                 document.getElementById('mainApp').style.display = 'none';
                 document.getElementById('adminPanel').style.display = 'block';
-                document.getElementById('appHeader').innerText = 'Admin Panel';
                 loadAdminInvestmentManagement(); 
                 loadDepositRequests(); 
                 loadWithdrawalRequests(); 
@@ -1160,7 +1209,6 @@
             } else {
                 document.getElementById('adminPanel').style.display = 'none';
                 document.getElementById('mainApp').style.display = 'block';
-                document.getElementById('appHeader').innerText = 'Investment Platform';
                 
                 setupUserAccountListeners(phone);
                 loadUserData(userData);
@@ -1255,11 +1303,23 @@
             if (claimInterval) clearInterval(claimInterval);
             currentUserPhone = null;
             currentUserData = null;
+            
+            // --- HIDE APP/ADMIN, SHOW AUTH PAGE ---
             document.getElementById('mainApp').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('authOverlay').style.display = 'flex';
-            isLoginMode = false;
-            toggleAuthMode();
+            document.getElementById('authSection').style.display = 'flex';
+            
+            // Restart auth slideshow
+            startAuthSlideshow();
+
+            isLoginMode = true; // reset to login mode
+            document.getElementById('authTitle').innerText = 'Login';
+            document.getElementById('authButton').innerText = 'Login';
+            document.getElementById('authSwitchText').innerText = "Don't have an account? ";
+            document.querySelector('.auth-switch a').innerText = 'Register Now';
+            document.getElementById('authConfirmPassword').style.display = 'none';
+            document.getElementById('authReferralCode').style.display = 'none';
+            document.getElementById('message').innerText = '';
             document.getElementById('authForm').reset();
         }
 
@@ -1343,7 +1403,36 @@
             }
         });
 
-        // SLIDESHOW (FOOTBALL IMAGES)
+        // --- NEW: AUTH SLIDESHOW SCRIPT (Fixed Images) ---
+        // ተቀይሯል፡ ሁለት የእግር ኳስ ምስሎች ብቻ
+        const authPlayerImages = [
+            "https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Stadium
+            "https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"  // Action
+        ];
+        let authSlideIndex = 0;
+        let authSlideInterval;
+
+        function startAuthSlideshow() {
+            const imgElement = document.getElementById('authSlideImage');
+            if(!imgElement) return;
+
+            // Clear existing to avoid double timers
+            if(authSlideInterval) clearInterval(authSlideInterval);
+            
+            // Set first image immediately
+            imgElement.src = authPlayerImages[0];
+
+            authSlideInterval = setInterval(() => {
+                imgElement.style.opacity = 0;
+                setTimeout(() => {
+                    authSlideIndex = (authSlideIndex + 1) % authPlayerImages.length;
+                    imgElement.src = authPlayerImages[authSlideIndex];
+                    imgElement.style.opacity = 1;
+                }, 500); // Wait for fade out
+            }, 3000); // Change every 3 seconds
+        }
+
+        // SLIDESHOW (FOOTBALL IMAGES - INSIDE APP)
         const slideshowImages = [
             'https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Football Stadium
             'https://images.pexels.com/photos/399187/pexels-photo-399187.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Ball in Net
@@ -1509,7 +1598,7 @@
 
                 logTransactionHistory(currentUserPhone, 'Gift Redeemed', parseFloat(giftData.amount), 'Credit', 'Completed', `Code: ${code}`);
 
-                alert(`Success! $${giftData.amount} added to your balance.`);
+                alert(`Success! ${giftData.amount} ETB added to your balance.`);
                 closeGiftModal();
 
             } catch(e) {
@@ -1572,7 +1661,7 @@
 
                     container.innerHTML += `
                         <div class="code-display" style="color: ${color};">
-                            <span>${key} - $${data.amount} ${timeText}</span>
+                            <span>${key} - ${data.amount} ETB ${timeText}</span>
                             <button onclick="navigator.clipboard.writeText('${key}')" style="background:#003366; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Copy</button>
                         </div>
                     `;
@@ -1715,7 +1804,7 @@
                         const userData = snapshot.val();
                         
                         if ((userData.totalInvestment || 0) <= 0) return alert("Withdrawal Failed: You must invest first.");
-                        if (userData.balance < amount) return alert(`Insufficient balance. You have $${userData.balance.toFixed(2)}.`);
+                        if (userData.balance < amount) return alert(`Insufficient balance. You have ${userData.balance.toFixed(2)} ETB.`);
 
                         userRef.update({ balance: userData.balance - amount }).then(() => {
                             const txKey = logTransactionHistory(currentUserPhone, 'Withdrawal', amount, 'Debit', 'Pending', `To: ${currentUserData.bankDetails.bankName}`);
@@ -1869,10 +1958,10 @@
                             <div class="team-name">${plan.name}</div>
                             ${limitText}
                             <div class="card-details">
-                                <p><span class="detail-label">Price:</span><span class="detail-value">$${plan.price ? plan.price.toFixed(2) : 'N/A'}</span></p>
-                                <p><span class="detail-label">Daily:</span><span class="detail-value">$${plan.dailyProfit ? plan.dailyProfit.toFixed(2) : 'N/A'}</span></p>
+                                <p><span class="detail-label">Price:</span><span class="detail-value">${plan.price ? plan.price.toFixed(2) : 'N/A'} ETB</span></p>
+                                <p><span class="detail-label">Daily:</span><span class="detail-value">${plan.dailyProfit ? plan.dailyProfit.toFixed(2) : 'N/A'} ETB</span></p>
                                 <p><span class="detail-label">Days:</span><span class="detail-value">${plan.maturityDays || 'N/A'}</span></p>
-                                <p><span class="detail-label">Total:</span><span class="detail-value">$${totalReturn}</span></p>
+                                <p><span class="detail-label">Total:</span><span class="detail-value">${totalReturn} ETB</span></p>
                             </div>
                             <button class="action-btn deposit" onclick="handleBuyPlan('${key}', ${plan.price || 0})">Buy Now</button>
                         </div>
@@ -1902,7 +1991,7 @@
                 return alert(`Purchase Limit Reached! You can only buy this plan ${purchaseLimit} times.`);
             }
 
-            if (!confirm(`Confirm purchase of ${plan.name} for $${price.toFixed(2)}?`)) return;
+            if (!confirm(`Confirm purchase of ${plan.name} for ${price.toFixed(2)} ETB?`)) return;
 
             const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
             const userInvestmentsRef = database.ref('user_investments/' + encodeURIComponent(currentUserPhone));
@@ -1966,8 +2055,8 @@
                         <div style="display:flex; justify-content: space-between; align-items: center;">
                             <div>
                                 <strong>${inv.planName}</strong>
-                                <p style="font-size: 0.9em;">Invested: $${inv.investmentPrice.toFixed(2)}</p>
-                                <p style="font-size: 0.9em; color:#388E3C;">Daily: $${dailyProfit.toFixed(2)}</p>
+                                <p style="font-size: 0.9em;">Invested: ${inv.investmentPrice.toFixed(2)} ETB</p>
+                                <p style="font-size: 0.9em; color:#388E3C;">Daily: ${dailyProfit.toFixed(2)} ETB</p>
                                 <p style="font-size: 0.9em; color:#003366; font-weight:bold;">Days Left: ${daysLeft} / ${totalDays}</p>
                             </div>
                             <img src="${inv.logoURL}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 5px;">
@@ -2080,7 +2169,7 @@
                     processDailyCommissions(currentUserData.referredBy, profit);
                 }
 
-                alert(`Claim Successful! $${profit.toFixed(2)} added.`);
+                alert(`Claim Successful! ${profit.toFixed(2)} ETB added.`);
                 
             } catch (error) { 
                 alert('Claim Error: ' + error.message);
@@ -2184,7 +2273,7 @@
                             <div class="history-date">${date} | <span style="font-weight:bold; color:${statusColor}">${item.status}</span></div>
                         </div>
                         <div class="history-amount" style="color:${color}">
-                            ${item.flow === 'Credit' ? '+' : '-'}$${item.amount.toFixed(2)}
+                            ${item.flow === 'Credit' ? '+' : '-'}${item.amount.toFixed(2)} ETB
                         </div>
                     </div>`;
             });
@@ -2198,13 +2287,13 @@
                 container.innerHTML = requests ? '' : '<p>No pending requests.</p>';
                 if (requests) Object.keys(requests).forEach(key => {
                     const req = requests[key];
-                    container.innerHTML += `<div class="deposit-request-item"><div class="request-info">User: ${req.userPhone}<br>$${req.amount} (${req.method})<br>TID: ${req.transactionId}</div><div class="request-actions"><button class="approve-btn" onclick="approveDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Approve</button><button class="reject-btn" onclick="rejectDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Reject</button></div></div>`;
+                    container.innerHTML += `<div class="deposit-request-item"><div class="request-info">User: ${req.userPhone}<br>${req.amount} ETB (${req.method})<br>TID: ${req.transactionId}</div><div class="request-actions"><button class="approve-btn" onclick="approveDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Approve</button><button class="reject-btn" onclick="rejectDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Reject</button></div></div>`;
                 });
             });
         }
         
         async function approveDeposit(requestId, userPhone, amount, transactionId) {
-            if (!confirm(`Approve $${amount} for ${userPhone}?`)) return;
+            if (!confirm(`Approve ${amount} ETB for ${userPhone}?`)) return;
             
             const reqSnapshot = await database.ref('deposit_requests/' + requestId).once('value');
             const reqData = reqSnapshot.val();
@@ -2253,7 +2342,7 @@
                     container.innerHTML += `
                         <div class="withdrawal-request-item" style="border-left: 4px solid orange;">
                             <div class="request-info">
-                                <strong>${req.userPhone}</strong> requests <strong>$${req.amount}</strong><br>
+                                <strong>${req.userPhone}</strong> requests <strong>${req.amount} ETB</strong><br>
                                 <span style="font-size:0.85em; color: #555;">Bank: ${req.bankName}<br>Acc: ${req.bankAccount}<br>Name: ${req.accountName}</span>
                             </div>
                             <div class="request-actions">
@@ -2357,7 +2446,7 @@
                 container.innerHTML = plans ? '' : '<p>No plans.</p>';
                 if (plans) Object.keys(plans).forEach(key => {
                     const plan = plans[key];
-                    container.innerHTML += `<div class="plan-item"><div>${plan.name} ($${plan.price}) - Limit: ${plan.purchaseLimit || 'None'}</div><div><button class="delete-btn" onclick="deletePlan('${key}')">Delete</button></div></div>`;
+                    container.innerHTML += `<div class="plan-item"><div>${plan.name} (${plan.price} ETB) - Limit: ${plan.purchaseLimit || 'None'}</div><div><button class="delete-btn" onclick="deletePlan('${key}')">Delete</button></div></div>`;
                 });
             });
         }
@@ -2449,7 +2538,7 @@
                                     <span>${phoneDisplay}</span>
                                 </div>
                                 <div class="record-amount" style="color: #003366;">
-                                    Invested: $${invested.toFixed(2)}
+                                    Invested: ${invested.toFixed(2)} ETB
                                 </div>
                             </div>
                         `;
@@ -2476,7 +2565,9 @@
                 if (isLoginMode) toggleAuthMode();
                 document.getElementById('authReferralCode').value = refParam;
             }
-            if (document.getElementById('authOverlay').style.display !== 'none') startSlideshow();
+            if (document.getElementById('authSection').style.display !== 'none') {
+                startAuthSlideshow();
+            }
         });
     </script>
 </body>

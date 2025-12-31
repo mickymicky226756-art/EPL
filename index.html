@@ -2028,7 +2028,8 @@
                 Object.keys(plans).forEach(key => {
                     const plan = plans[key];
                     const logoSource = plan.logoURL || 'https://via.placeholder.com/150x100?text=PL'; 
-                    const totalReturn = (plan.price && plan.dailyProfit && plan.maturityDays) ? (plan.price + (plan.dailyProfit * plan.maturityDays)).toFixed(2) : 'N/A';
+                    // MODIFIED: Removed plan.price from the calculation as requested
+                    const totalReturn = (plan.dailyProfit && plan.maturityDays) ? (plan.dailyProfit * plan.maturityDays).toFixed(2) : 'N/A';
                     
                     const limitText = plan.purchaseLimit ? `<span style="color:red; font-size: 0.8em; display:block;">(Limit: ${plan.purchaseLimit} per user)</span>` : '';
 

@@ -1911,10 +1911,21 @@
                     if (committed) {
                         const userData = snapshot.val();
                         
+                        // --- NEW LOGIC: ONE WITHDRAWAL PER DAY ---
+                        const todayStr = getEthiopiaTime().toDateString(); // Get current date in Ethiopia
+                        if (userData.lastWithdrawalDate === todayStr) {
+                            return alert("Withdrawal Limit: You can only withdraw once per day.");
+                        }
+                        // ------------------------------------------
+
                         if ((userData.totalInvestment || 0) <= 0) return alert("Withdrawal Failed: You must invest first.");
                         if (userData.balance < amount) return alert(`Insufficient balance. You have ${userData.balance.toFixed(2)} ETB.`);
 
-                        userRef.update({ balance: userData.balance - amount }).then(() => {
+                        // Added lastWithdrawalDate update here
+                        userRef.update({ 
+                            balance: userData.balance - amount,
+                            lastWithdrawalDate: todayStr 
+                        }).then(() => {
                             const txKey = logTransactionHistory(currentUserPhone, 'Withdrawal', amount, 'Debit', 'Pending', `To: ${currentUserData.bankDetails.bankName}`);
 
                             const withdrawalRequest = {

@@ -28,6 +28,7 @@
             display: flex; 
             justify-content: center;
             align-items: center;
+            /* Changed background slightly to fit Christmas theme better if needed, but kept original flag overlay */
             background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png');
             background-size: cover;
             background-position: center;
@@ -540,7 +541,7 @@
         <div class="auth-box">
             
             <div class="auth-slideshow-wrapper">
-                <img id="authSlideImage" src="https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Player">
+                <img id="authSlideImage" src="https://images.pexels.com/photos/3224164/pexels-photo-3224164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Gena">
             </div>
 
             <h2 id="authTitle">Login</h2>
@@ -1512,10 +1513,13 @@
             }
         });
 
+        // --- UPDATED AUTH SLIDESHOW IMAGES TO CHRISTMAS THEME ---
         const authPlayerImages = [
-            "https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", 
-            "https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"
+            "https://images.pexels.com/photos/3224164/pexels-photo-3224164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Christmas 1
+            "https://images.pexels.com/photos/5728297/pexels-photo-5728297.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"  // Christmas 2
         ];
+        // --------------------------------------------------------
+
         let authSlideIndex = 0;
         let authSlideInterval;
 

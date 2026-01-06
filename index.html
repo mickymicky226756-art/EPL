@@ -364,6 +364,8 @@
         .modal-content button {
             width: 100%; padding: 10px; margin-top: 10px; background-color: #003366; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;
         }
+        .modal-content button:disabled { background-color: #ccc; cursor: not-allowed; }
+
         .modal-content button.next-step { background-color: #4CAF50; }
         .modal-content .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
 
@@ -959,7 +961,7 @@
             <h2>Redeem Gift Code</h2>
             <p style="font-size:0.9em; color:#666;">Paste the code shared by the Admin to get free balance.</p>
             <input type="text" id="giftCodeInput" placeholder="Enter Code Here (e.g. PL-X7Z...)" required style="text-align: center; font-weight: bold; letter-spacing: 1px;">
-            <button class="next-step" onclick="submitGiftRedemption()">Redeem Now</button>
+            <button class="next-step" id="redeemGiftBtn" onclick="submitGiftRedemption()">Redeem Now</button>
         </div>
     </div>
 
@@ -1669,54 +1671,87 @@
             if (!currentUserPhone) return;
             document.getElementById('giftCodeInput').value = '';
             document.getElementById('giftModal').style.display = 'block';
+            
+            // Reset button state
+            const btn = document.getElementById('redeemGiftBtn');
+            btn.disabled = false;
+            btn.innerText = "Redeem Now";
         }
         
         function closeGiftModal() {
             document.getElementById('giftModal').style.display = 'none';
         }
 
-        async function submitGiftRedemption() {
+        // --- UPDATED GIFT REDEMPTION LOGIC ---
+        function submitGiftRedemption() {
             const code = document.getElementById('giftCodeInput').value.trim();
             if(!code) return alert("Please enter a code.");
+            
+            const btn = document.getElementById('redeemGiftBtn');
+            // 1. Immediately disable button to prevent double clicks
+            btn.disabled = true;
+            btn.innerText = "Processing...";
             
             const giftRef = database.ref('gift_codes/' + code);
             const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
 
-            try {
-                const snapshot = await giftRef.once('value');
-                const giftData = snapshot.val();
-
-                if(!giftData) return alert("Invalid Gift Code.");
-                if(giftData.status !== 'active') return alert("This code has already been used.");
-
+            // 2. Use a TRANSACTION on the gift code itself to ensure atomicity
+            giftRef.transaction((currentData) => {
+                // If code doesn't exist, return null to abort transaction (handled in completion)
+                if (currentData === null) return currentData;
+                
+                // If code is already used, abort transaction by returning undefined or same data
+                if (currentData.status === 'used') return; // aborts transaction
+                
+                // Check expiry logic inside transaction if needed, or update status
                 const now = Date.now();
-                if (giftData.expiresAt && now > giftData.expiresAt) {
-                    return alert("This code has EXPIRED and is no longer valid.");
+                if (currentData.expiresAt && now > currentData.expiresAt) return; // Expired, abort
+                
+                // If valid, mark as used immediately within the transaction
+                currentData.status = 'used';
+                currentData.usedBy = currentUserPhone;
+                currentData.usedAt = new Date().toISOString();
+                
+                return currentData; // Commit changes
+            }, (error, committed, snapshot) => {
+                if (error) {
+                    alert("System Error: " + error.message);
+                    btn.disabled = false;
+                    btn.innerText = "Redeem Now";
+                } else if (!committed) {
+                    // Transaction aborted means code didn't exist, was already used, or expired
+                    // We need to fetch it once to see WHY it failed to give better error
+                    giftRef.once('value').then(snap => {
+                        const val = snap.val();
+                        if (!val) alert("Invalid Gift Code.");
+                        else if (val.status === 'used') alert("This code has already been used.");
+                        else if (val.expiresAt && Date.now() > val.expiresAt) alert("This code has EXPIRED.");
+                        else alert("Code redemption failed.");
+                        
+                        btn.disabled = false;
+                        btn.innerText = "Redeem Now";
+                    });
+                } else {
+                    // Transaction COMMITTED! We successfully claimed the code.
+                    // Now update the user balance safely.
+                    const giftData = snapshot.val();
+                    const amount = parseFloat(giftData.amount);
+                    
+                    userRef.transaction(userData => {
+                        if (userData) {
+                            userData.balance = (userData.balance || 0) + amount;
+                            userData.totalIncome = (userData.totalIncome || 0) + amount; 
+                            return userData;
+                        }
+                    }).then(() => {
+                        logTransactionHistory(currentUserPhone, 'Gift Redeemed', amount, 'Credit', 'Completed', `Code: ${code}`);
+                        alert(`Success! ${amount} ETB added to your balance.`);
+                        closeGiftModal();
+                    });
                 }
-
-                await userRef.transaction(userData => {
-                    if (userData) {
-                        userData.balance = (userData.balance || 0) + parseFloat(giftData.amount);
-                        userData.totalIncome = (userData.totalIncome || 0) + parseFloat(giftData.amount); 
-                        return userData;
-                    }
-                });
-
-                await giftRef.update({
-                    status: 'used',
-                    usedBy: currentUserPhone,
-                    usedAt: new Date().toISOString()
-                });
-
-                logTransactionHistory(currentUserPhone, 'Gift Redeemed', parseFloat(giftData.amount), 'Credit', 'Completed', `Code: ${code}`);
-
-                alert(`Success! ${giftData.amount} ETB added to your balance.`);
-                closeGiftModal();
-
-            } catch(e) {
-                alert("Error redeeming code: " + e.message);
-            }
+            });
         }
+        // -------------------------------------
 
         function generateGiftCode() {
             const amount = parseFloat(document.getElementById('giftCodeAmount').value);

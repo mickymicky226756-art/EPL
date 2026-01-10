@@ -21,7 +21,45 @@
             min-height: 100vh;
         }
 
-        /* --- AUTH PAGE STYLING (Login/Register) --- */
+        /* --- TOAST NOTIFICATION STYLES --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 90%;
+            max-width: 350px;
+            pointer-events: none; 
+        }
+        .toast {
+            background-color: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            font-size: 0.9em;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            pointer-events: auto; 
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .toast.success { background-color: #4CAF50; } 
+        .toast.error { background-color: #f44336; } 
+        .toast.info { background-color: #003366; } 
+
+        /* --- AUTH PAGE STYLING --- */
         #authSection {
             width: 100%;
             min-height: 100vh;
@@ -48,7 +86,6 @@
             overflow: hidden;
         }
 
-        /* --- UPDATED LOGO STYLING --- */
         .auth-logo-wrapper {
             width: 100%;
             display: flex;
@@ -59,16 +96,13 @@
         }
         
         .auth-logo {
-            width: 130px; /* Logo Size */
+            width: 130px; 
             height: auto;
-            /* Effect to make it pop/glow */
             filter: drop-shadow(0 4px 8px rgba(55, 0, 60, 0.5)); 
             transition: transform 0.3s ease;
         }
         
-        .auth-logo:hover {
-            transform: scale(1.05);
-        }
+        .auth-logo:hover { transform: scale(1.05); }
 
         .input-group {
             display: flex;
@@ -96,11 +130,7 @@
             border-radius: 6px;
             font-size: 1em;
         }
-        .input-group input {
-            margin-bottom: 0;
-            border: none;
-            border-radius: 0;
-        }
+        .input-group input { margin-bottom: 0; border: none; border-radius: 0; }
 
         .auth-box button {
             width: 100%;
@@ -305,7 +335,6 @@
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
         }
 
-        /* --- LIMIT BADGE STYLE --- */
         .limit-badge {
             background-color: #ff9800; /* Orange background */
             color: white;
@@ -577,6 +606,8 @@
     </style>
 </head>
 <body>
+
+    <div id="toast-container"></div>
 
     <div id="authSection">
         <div class="auth-box">
@@ -925,9 +956,10 @@
                 <p style="font-size:0.9em; color:#555;">Generate a code for users to redeem balance.</p>
                 
                 <div style="display: flex; gap: 10px;">
-                    <input type="number" id="giftCodeAmount" placeholder="Amount (ETB)" required style="flex:1;">
-                    <input type="number" id="giftCodeMinutes" placeholder="Expire in (Minutes)" required style="flex:1;">
+                    <input type="number" id="giftCodeMin" placeholder="Min Amount (e.g. 10)" required style="flex:1;">
+                    <input type="number" id="giftCodeMax" placeholder="Max Amount (e.g. 50)" required style="flex:1;">
                 </div>
+                <input type="number" id="giftCodeMinutes" placeholder="Expire in (Minutes)" required style="width:100%;">
                 
                 <button onclick="generateGiftCode()" style="background-color: #E91E63; margin-bottom: 15px;">Generate Code</button>
                 <h3>Active Codes</h3>
@@ -1190,10 +1222,30 @@
         let globalPaymentSettings = {}; 
         
         let allInvestmentPlans = {}; 
-        let currentPlanFilter = 'Pro'; // Default filter
+        let currentPlanFilter = 'Pro'; 
 
         function getEthiopiaTime() {
             return new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Addis_Ababa" }));
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerText = message;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    container.removeChild(toast);
+                }, 300);
+            }, 3000);
         }
 
         function toggleAuthMode() {
@@ -1374,8 +1426,8 @@
             };
             
             database.ref('admin_settings/payment_methods').set(updates)
-                .then(() => alert('Account Details Updated Successfully!'))
-                .catch(err => alert('Error: ' + err.message));
+                .then(() => showToast('Account Details Updated Successfully!', 'success'))
+                .catch(err => showToast('Error: ' + err.message, 'error'));
         }
 
         function handleLoginSuccess(phone, userData, isAdmin = false) {
@@ -1384,8 +1436,6 @@
             
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('message').innerText = '';
-            
-            // if(authSlideInterval) clearInterval(authSlideInterval); // Removed slideshow
             
             loadPaymentSettings();
 
@@ -1492,8 +1542,6 @@
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('authSection').style.display = 'flex';
             
-            // startAuthSlideshow(); // Removed Slideshow call
-
             isLoginMode = true; 
             document.getElementById('authTitle').innerText = 'Login';
             document.getElementById('authButton').innerText = 'Login';
@@ -1583,8 +1631,6 @@
                 messageElement.innerText = 'DB Error: ' + error.message;
             }
         });
-
-        /* --- REMOVED AUTH SLIDESHOW JS LOGIC --- */
 
         const slideshowImages = [
             'https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', 
@@ -1676,12 +1722,12 @@
 
         function copyDepositAccount() {
             const accNum = document.getElementById('accountNumber').innerText;
-            navigator.clipboard.writeText(accNum).then(() => alert('Account Number Copied!')).catch(err => alert('Copy manually.'));
+            navigator.clipboard.writeText(accNum).then(() => showToast('Account Number Copied!', 'success')).catch(err => showToast('Copy manually.', 'error'));
         }
         function handleMakePaymentClick() {
             const amount = parseFloat(document.getElementById('depositAmount').value);
-            if (isNaN(amount) || amount < 710) return alert("Please enter a valid amount (minimum 710 ETB).");
-            if (!depositData.method) return alert("Please select a payment method.");
+            if (isNaN(amount) || amount < 710) return showToast("Please enter a valid amount (minimum 710 ETB).", 'error');
+            if (!depositData.method) return showToast("Please select a payment method.", 'error');
             depositData.amount = amount;
             document.getElementById('confirmMethod').innerText = depositData.method;
             document.getElementById('confirmAmount').innerText = depositData.amount.toFixed(2);
@@ -1691,7 +1737,7 @@
 
         async function submitDepositRequest() {
             const transactionId = document.getElementById('transactionIdInput').value.trim();
-            if (!transactionId) return alert("Please enter the Transaction ID.");
+            if (!transactionId) return showToast("Please enter the Transaction ID.", 'error');
             
             const txKey = logTransactionHistory(currentUserPhone, 'Deposit Request', depositData.amount, 'Credit', 'Pending', `TID: ${transactionId}`);
 
@@ -1708,10 +1754,10 @@
 
             await database.ref('deposit_requests').push(newRequest)
                 .then(() => {
-                    alert('Deposit request submitted! Waiting for Admin approval.');
+                    showToast('Deposit request submitted! Waiting for Admin approval.', 'success');
                     closeDepositModal();
                 })
-                .catch(error => alert('Error: ' + error.message));
+                .catch(error => showToast('Error: ' + error.message, 'error'));
         }
 
         function openGiftModal() {
@@ -1728,9 +1774,10 @@
             document.getElementById('giftModal').style.display = 'none';
         }
 
+        // --- UPDATED GIFT REDEMPTION LOGIC ---
         function submitGiftRedemption() {
             const code = document.getElementById('giftCodeInput').value.trim();
-            if(!code) return alert("Please enter a code.");
+            if(!code) return showToast("Please enter a code.", 'error');
             
             const btn = document.getElementById('redeemGiftBtn');
             btn.disabled = true;
@@ -1738,60 +1785,100 @@
             
             const giftRef = database.ref('gift_codes/' + code);
             const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
+            const userKey = encodeURIComponent(currentUserPhone).replace(/\./g, '%2E');
 
-            giftRef.transaction((currentData) => {
-                if (currentData === null) return currentData;
-                if (currentData.status === 'used') return; 
-                
+            // 1. Fetch Gift Data First
+            giftRef.once('value').then((giftSnap) => {
+                const giftData = giftSnap.val();
                 const now = Date.now();
-                if (currentData.expiresAt && now > currentData.expiresAt) return; 
-                
-                currentData.status = 'used';
-                currentData.usedBy = currentUserPhone;
-                currentData.usedAt = new Date().toISOString();
-                
-                return currentData; 
-            }, (error, committed, snapshot) => {
-                if (error) {
-                    alert("System Error: " + error.message);
-                    btn.disabled = false;
-                    btn.innerText = "Redeem Now";
-                } else if (!committed) {
-                    giftRef.once('value').then(snap => {
-                        const val = snap.val();
-                        if (!val) alert("Invalid Gift Code.");
-                        else if (val.status === 'used') alert("This code has already been used.");
-                        else if (val.expiresAt && Date.now() > val.expiresAt) alert("This code has EXPIRED.");
-                        else alert("Code redemption failed.");
-                        
-                        btn.disabled = false;
-                        btn.innerText = "Redeem Now";
-                    });
-                } else {
-                    const giftData = snapshot.val();
-                    const amount = parseFloat(giftData.amount);
-                    
-                    userRef.transaction(userData => {
-                        if (userData) {
-                            userData.balance = (userData.balance || 0) + amount;
-                            userData.totalIncome = (userData.totalIncome || 0) + amount; 
-                            return userData;
-                        }
-                    }).then(() => {
-                        logTransactionHistory(currentUserPhone, 'Gift Redeemed', amount, 'Credit', 'Completed', `Code: ${code}`);
-                        alert(`Success! ${amount} ETB added to your balance.`);
-                        closeGiftModal();
-                    });
+
+                // Validation Checks
+                if (!giftData) {
+                    btn.disabled = false; btn.innerText = "Redeem Now";
+                    return showToast("Invalid Gift Code.", 'error');
                 }
+                if (giftData.expiresAt && now > giftData.expiresAt) {
+                    btn.disabled = false; btn.innerText = "Redeem Now";
+                    return showToast("This code has EXPIRED.", 'error');
+                }
+                if (giftData.usedBy && giftData.usedBy[userKey]) {
+                    btn.disabled = false; btn.innerText = "Redeem Now";
+                    return showToast("You have ALREADY used this code.", 'error');
+                }
+
+                // 2. Fetch User Data to Determine Prize
+                userRef.once('value').then((userSnap) => {
+                    const userData = userSnap.val();
+                    let prizeAmount = 0;
+
+                    if (!userData) {
+                        btn.disabled = false; btn.innerText = "Redeem Now";
+                        return showToast("User Error.", 'error');
+                    }
+
+                    // --- PRIZE LOGIC ---
+                    const totalInvested = parseFloat(userData.totalInvestment || 0);
+                    
+                    if (totalInvested > 0) {
+                        // RANDOM PRIZE for Investors
+                        const min = parseFloat(giftData.minAmount);
+                        const max = parseFloat(giftData.maxAmount);
+                        prizeAmount = (Math.random() * (max - min) + min);
+                        prizeAmount = parseFloat(prizeAmount.toFixed(2));
+                    } else {
+                        // FIXED PRIZE for Non-Investors
+                        prizeAmount = 2.00;
+                    }
+
+                    // 3. Update Gift Code (Mark as Used)
+                    giftRef.transaction((currentData) => {
+                        if (currentData === null) return currentData;
+                        if (currentData.usedBy && currentData.usedBy[userKey]) return; // Abort if used race condition
+                        
+                        if (!currentData.usedBy) currentData.usedBy = {};
+                        currentData.usedBy[userKey] = {
+                            timestamp: new Date().toISOString(),
+                            amountWon: prizeAmount,
+                            phone: currentUserPhone
+                        };
+                        return currentData;
+                    }, (error, committed, snapshot) => {
+                        if (error) {
+                            showToast("System Error.", 'error');
+                            btn.disabled = false; btn.innerText = "Redeem Now";
+                        } else if (!committed) {
+                            showToast("You have already used this code.", 'error');
+                            btn.disabled = false; btn.innerText = "Redeem Now";
+                        } else {
+                            // 4. Update User Balance
+                            userRef.transaction(uData => {
+                                if (uData) {
+                                    uData.balance = (uData.balance || 0) + prizeAmount;
+                                    uData.totalIncome = (uData.totalIncome || 0) + prizeAmount;
+                                    return uData;
+                                }
+                            }).then(() => {
+                                logTransactionHistory(currentUserPhone, 'Gift Redeemed', prizeAmount, 'Credit', 'Completed', `Code: ${code}`);
+                                showToast(`Success! You won ${prizeAmount} ETB!`, 'success');
+                                closeGiftModal();
+                                btn.disabled = false;
+                                btn.innerText = "Redeem Now";
+                            });
+                        }
+                    });
+                });
             });
         }
 
+        // --- UPDATED ADMIN GENERATION LOGIC ---
         function generateGiftCode() {
-            const amount = parseFloat(document.getElementById('giftCodeAmount').value);
+            const minAmount = parseFloat(document.getElementById('giftCodeMin').value);
+            const maxAmount = parseFloat(document.getElementById('giftCodeMax').value);
             const minutes = parseInt(document.getElementById('giftCodeMinutes').value);
 
-            if(isNaN(amount) || amount <= 0) return alert("Enter valid amount.");
-            if(isNaN(minutes) || minutes <= 0) return alert("Enter valid minutes.");
+            if(isNaN(minAmount) || minAmount <= 0) return showToast("Enter valid Min Amount.", 'error');
+            if(isNaN(maxAmount) || maxAmount < minAmount) return showToast("Max Amount must be greater than Min.", 'error');
+            if(isNaN(minutes) || minutes <= 0) return showToast("Enter valid minutes.", 'error');
 
             const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
             let randomStr = "";
@@ -1801,13 +1888,15 @@
             const expiresAt = Date.now() + (minutes * 60 * 1000); 
 
             database.ref('gift_codes/' + code).set({
-                amount: amount,
+                minAmount: minAmount,
+                maxAmount: maxAmount,
                 expiresAt: expiresAt, 
                 status: 'active',
                 createdAt: new Date().toISOString()
             }).then(() => {
-                alert(`Code Created: ${code}\nValid for ${minutes} minutes.`);
-                document.getElementById('giftCodeAmount').value = '';
+                showToast(`Code Created: ${code}`, 'success');
+                document.getElementById('giftCodeMin').value = '';
+                document.getElementById('giftCodeMax').value = '';
                 document.getElementById('giftCodeMinutes').value = '';
             });
         }
@@ -1841,7 +1930,7 @@
 
                     container.innerHTML += `
                         <div class="code-display" style="color: ${color};">
-                            <span>${key} - ${data.amount} ETB ${timeText}</span>
+                            <span>${key} - [${data.minAmount}-${data.maxAmount} ETB] ${timeText}</span>
                             <button onclick="navigator.clipboard.writeText('${key}')" style="background:#003366; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer;">Copy</button>
                         </div>
                     `;
@@ -1875,11 +1964,11 @@
             const password = document.getElementById('bindPassword').value;
 
             if (!bankName || !accountName || !accountNumber || !password) {
-                return alert("Please fill in all fields.");
+                return showToast("Please fill in all fields.", 'error');
             }
 
             if (password !== currentUserData.password) {
-                return alert("Incorrect Password. Cannot bind bank.");
+                return showToast("Incorrect Password. Cannot bind bank.", 'error');
             }
 
             const bankInfo = {
@@ -1903,19 +1992,19 @@
                     });
 
                     if (isTaken) {
-                        return alert("Error: This bank account number is already linked to another user!");
+                        return showToast("Error: This bank account number is already linked to another user!", 'error');
                     }
                 }
 
                 database.ref('users/' + encodeURIComponent(currentUserPhone)).update({ bankDetails: bankInfo })
                     .then(() => {
-                        alert("Bank Account Bound Successfully!");
+                        showToast("Bank Account Bound Successfully!", 'success');
                         closeBindBankModal();
                     })
-                    .catch(err => alert("Error binding bank: " + err.message));
+                    .catch(err => showToast("Error binding bank: " + err.message, 'error'));
 
             } catch (error) {
-                alert("System Error checking account: " + error.message);
+                showToast("System Error checking account: " + error.message, 'error');
             }
         }
 
@@ -1940,7 +2029,7 @@
             if (!currentUserPhone) return;
             
             if (!currentUserData || !currentUserData.bankDetails) {
-                alert("Please Bind Your Bank Account First!");
+                showToast("Please Bind Your Bank Account First!", 'error');
                 openBindBankModal(); 
                 return;
             }
@@ -1961,11 +2050,11 @@
             const amount = parseFloat(document.getElementById('withdrawAmount').value);
             const password = document.getElementById('withdrawPassword').value;
 
-            if (isNaN(amount) || amount < 150) return alert("Please enter a valid amount (minimum 150 ETB).");
-            if (!password) return alert("Please enter your password.");
+            if (isNaN(amount) || amount < 150) return showToast("Please enter a valid amount (minimum 150 ETB).", 'error');
+            if (!password) return showToast("Please enter your password.", 'error');
 
             if (password !== currentUserData.password) {
-                return alert("Incorrect Password.");
+                return showToast("Incorrect Password.", 'error');
             }
 
             const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
@@ -1975,17 +2064,17 @@
                     if (currentData === null) return;
                     return currentData; 
                 }, (error, committed, snapshot) => {
-                    if (error) return alert('Transaction failed.');
+                    if (error) return showToast('Transaction failed.', 'error');
                     if (committed) {
                         const userData = snapshot.val();
                         
                         const todayStr = getEthiopiaTime().toDateString(); 
                         if (userData.lastWithdrawalDate === todayStr) {
-                            return alert("Withdrawal Limit: You can only withdraw once per day.");
+                            return showToast("Withdrawal Limit: You can only withdraw once per day.", 'error');
                         }
 
-                        if ((userData.totalInvestment || 0) <= 0) return alert("Withdrawal Failed: You must invest first.");
-                        if (userData.balance < amount) return alert(`Insufficient balance. You have ${userData.balance.toFixed(2)} ETB.`);
+                        if ((userData.totalInvestment || 0) <= 0) return showToast("Withdrawal Failed: You must invest first.", 'error');
+                        if (userData.balance < amount) return showToast(`Insufficient balance. You have ${userData.balance.toFixed(2)} ETB.`, 'error');
 
                         userRef.update({ 
                             balance: userData.balance - amount,
@@ -2006,14 +2095,14 @@
                             
                             database.ref('withdrawal_requests').push(withdrawalRequest);
                             
-                            alert("Withdrawal request submitted successfully! Pending Admin Approval.");
+                            showToast("Withdrawal request submitted successfully! Pending Admin Approval.", 'success');
                             closeWithdrawModal();
                         });
                     }
                 });
             } catch (error) {
                 console.error(error);
-                alert("System error during withdrawal.");
+                showToast("System error during withdrawal.", 'error');
             }
         }
 
@@ -2031,16 +2120,16 @@
             const newPass = document.getElementById('newPassword').value;
             const confirmPass = document.getElementById('confirmNewPassword').value;
 
-            if (!oldPass || !newPass || !confirmPass) return alert("Please fill all fields.");
-            if (newPass !== confirmPass) return alert("New passwords do not match.");
-            if (oldPass !== currentUserData.password) return alert("Incorrect Old Password.");
+            if (!oldPass || !newPass || !confirmPass) return showToast("Please fill all fields.", 'error');
+            if (newPass !== confirmPass) return showToast("New passwords do not match.", 'error');
+            if (oldPass !== currentUserData.password) return showToast("Incorrect Old Password.", 'error');
 
             try {
                 await database.ref('users/' + encodeURIComponent(currentUserPhone)).update({ password: newPass });
-                alert("Password Changed Successfully!");
+                showToast("Password Changed Successfully!", 'success');
                 closeChangePasswordModal();
             } catch (e) {
-                alert("Error updating password: " + e.message);
+                showToast("Error updating password: " + e.message, 'error');
             }
         }
 
@@ -2114,7 +2203,6 @@
             logTransactionHistory(phone, 'Team Commission', amount, 'Credit', 'Completed', description);
         }
 
-        /* --- NEW FILTERING LOGIC --- */
         function loadInvestmentPlans() {
             const container = document.getElementById('investmentPlansContainer');
             container.innerHTML = '<p>Loading plans...</p>';
@@ -2127,7 +2215,6 @@
         function switchCategory(category) {
             currentPlanFilter = category;
             
-            // Update UI buttons
             const buttons = document.querySelectorAll('.filter-btn');
             buttons.forEach(btn => {
                 if (btn.innerText === category) btn.classList.add('active');
@@ -2152,16 +2239,12 @@
             Object.keys(plans).forEach(key => {
                 const plan = plans[key];
                 const planName = plan.name ? plan.name.toUpperCase() : '';
-                const planCategory = plan.category; // Now using explicit category if available
+                const planCategory = plan.category; 
                 let isMatch = false;
 
-                // FILTER LOGIC UPDATED TO USE CATEGORY
                 if (planCategory) {
-                    // New Plans with explicit category
                     if (planCategory === currentPlanFilter) isMatch = true;
-                    // Special case: Pro button also shows "Pro" category
                 } else {
-                    // Legacy Plans (Fallback to name matching)
                     if (currentPlanFilter === 'VVIP') {
                         if (planName.includes('VVIP')) isMatch = true;
                     } else if (currentPlanFilter === 'VIP') {
@@ -2203,11 +2286,16 @@
         }
         
         async function handleBuyPlan(planId, price) {
-            if (!currentUserPhone) return alert("Please login first.");
+            if (!currentUserPhone) return showToast("Please login first.", 'error');
             const plan = allInvestmentPlans[planId];
-            if (!plan) return alert("Error: Plan not found.");
+            if (!plan) return showToast("Error: Plan not found.", 'error');
 
-            const purchaseLimit = plan.purchaseLimit || 9999; 
+            const purchaseLimit = (plan.purchaseLimit !== undefined && plan.purchaseLimit !== "") ? parseInt(plan.purchaseLimit) : 9999; 
+            
+            if (purchaseLimit === 0) {
+                return showToast("This plan is currently unavailable for purchase.", 'info');
+            }
+
             const userInvestmentsSnapshot = await database.ref('user_investments/' + encodeURIComponent(currentUserPhone)).once('value');
             const userInvestments = userInvestmentsSnapshot.val() || {};
             
@@ -2219,7 +2307,7 @@
             });
 
             if (currentCount >= purchaseLimit) {
-                return alert(`Purchase Limit Reached! You can only buy this plan ${purchaseLimit} times.`);
+                return showToast(`Purchase Limit Reached! You can only buy this plan ${purchaseLimit} times.`, 'error');
             }
 
             if (!confirm(`Confirm purchase of ${plan.name} for ${price.toFixed(2)} ETB?`)) return;
@@ -2255,12 +2343,12 @@
                         processFirstInvestmentBonus(currentUserData.referredBy, price);
                     }
 
-                    alert(`Successfully purchased ${plan.name}!`);
+                    showToast(`Successfully purchased ${plan.name}!`, 'success');
                 } else {
-                     alert(`Purchase failed: Insufficient balance.`);
+                     showToast(`Purchase failed: Insufficient balance.`, 'error');
                 }
             } catch (error) {
-                alert('Purchase Error: ' + error.message);
+                showToast('Purchase Error: ' + error.message, 'error');
             }
         }
         
@@ -2373,13 +2461,13 @@
                 const daysGone = inv.claimCount || 0;
                 
                 if (daysGone >= totalDays) {
-                    alert("Investment cycle completed.");
+                    showToast("Investment cycle completed.", 'info');
                     return; 
                 }
 
                 const now = getEthiopiaTime().getTime();
                 if (now - (inv.lastClaimTime || 0) < 24 * 60 * 60 * 1000) {
-                     alert("Claim failed: Please wait for the 24 hour timer.");
+                     showToast("Claim failed: Please wait for the 24 hour timer.", 'error');
                      return;
                 }
                 
@@ -2397,10 +2485,10 @@
                     processDailyCommissions(currentUserData.referredBy, profit);
                 }
 
-                alert(`Claim Successful! ${profit.toFixed(2)} ETB added.`);
+                showToast(`Claim Successful! ${profit.toFixed(2)} ETB added.`, 'success');
                 
             } catch (error) { 
-                alert('Claim Error: ' + error.message);
+                showToast('Claim Error: ' + error.message, 'error');
                 buttonElement.disabled = false;
                 buttonElement.classList.remove('disabled');
                 buttonElement.innerText = originalText;
@@ -2515,7 +2603,6 @@
         async function approveDeposit(requestId, userPhone, amount, transactionId) {
             if (!confirm(`Approve ${amount} ETB for ${userPhone}?`)) return;
             
-            // Ensure amount is a number
             const amountToAdd = parseFloat(amount);
 
             const reqSnapshot = await database.ref('deposit_requests/' + requestId).once('value');
@@ -2523,27 +2610,24 @@
 
             const userRef = database.ref('users/' + encodeURIComponent(userPhone));
             try {
-                // IMPORTANT: This updates the balance directly in the database
                 await userRef.transaction((data) => {
                     if (data) {
                         data.balance = (parseFloat(data.balance) || 0) + amountToAdd;
                         data.totalRecharge = (parseFloat(data.totalRecharge) || 0) + amountToAdd;
                         return data;
                     } else {
-                        return data; // User not found
+                        return data; 
                     }
                 });
                 
-                // Mark request as Approved
                 await database.ref('deposit_requests/' + requestId).update({ status: 'Approved', approvedBy: currentUserPhone });
 
-                // Mark history as Completed
                 if(reqData && reqData.historyId) {
                     await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Completed' });
                 }
 
-                alert('Deposit Approved & Balance Added.');
-            } catch (e) { alert('Error: ' + e.message); }
+                showToast('Deposit Approved & Balance Added.', 'success');
+            } catch (e) { showToast('Error: ' + e.message, 'error'); }
         }
 
         async function rejectDeposit(requestId, userPhone, amount, transactionId) {
@@ -2603,9 +2687,9 @@
                     await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Completed' });
                 }
 
-                alert("Withdrawal Approved.");
+                showToast("Withdrawal Approved.", 'success');
             } catch (err) {
-                alert("Error: " + err.message);
+                showToast("Error: " + err.message, 'error');
             }
         }
 
@@ -2632,9 +2716,9 @@
                     await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Rejected' });
                 }
 
-                alert("Withdrawal Rejected & Money Refunded.");
+                showToast("Withdrawal Rejected & Money Refunded.", 'success');
             } catch (err) {
-                alert("Error rejecting: " + err.message);
+                showToast("Error rejecting: " + err.message, 'error');
             }
         }
         
@@ -2646,26 +2730,26 @@
         }
         function createInvestmentPlan() {
             const name = document.getElementById('planName').value.trim();
-            const category = document.getElementById('planCategory').value; // Get Category
+            const category = document.getElementById('planCategory').value; 
             const price = parseFloat(document.getElementById('planPrice').value);
             const profit = parseFloat(document.getElementById('planProfit').value);
             const days = parseInt(document.getElementById('planDays').value);
             const limit = parseInt(document.getElementById('planLimit').value); 
 
             if (!name || !category || isNaN(price) || isNaN(profit) || isNaN(days) || isNaN(limit) || !currentSelectedLogo) {
-                return alert('Please fill all fields, select a Category and a Logo.');
+                return showToast('Please fill all fields, select a Category and a Logo.', 'error');
             }
             
             database.ref('investment_plans').push({ 
                 name, 
-                category, // Save Category
+                category, 
                 price, 
                 dailyProfit: profit, 
                 maturityDays: days, 
                 purchaseLimit: limit, 
                 logoURL: currentSelectedLogo 
             });
-            alert('Plan Created Successfully with Category!');
+            showToast('Plan Created Successfully with Category!', 'success');
         }
         function loadAdminInvestmentManagement() {
             const container = document.getElementById('existingPlansList');
@@ -2693,7 +2777,7 @@
             });
         }
         function copyReferralLink() {
-            navigator.clipboard.writeText(document.getElementById('referralLink').innerText).then(() => alert('Copied!')).catch(() => alert('Copy failed.'));
+            navigator.clipboard.writeText(document.getElementById('referralLink').innerText).then(() => showToast('Copied!', 'success')).catch(() => showToast('Copy failed.', 'error'));
         }
 
         function openAboutPage() {
@@ -2734,7 +2818,6 @@
             closeTelegramPopup();
         }
 
-        /* --- NEW FUNCTIONS FOR SUPPORT MODAL --- */
         function openSupportModal() {
             document.getElementById('supportModal').style.display = 'block';
         }

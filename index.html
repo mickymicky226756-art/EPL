@@ -28,7 +28,6 @@
             display: flex; 
             justify-content: center;
             align-items: center;
-            /* Changed background slightly to fit Christmas theme better if needed, but kept original flag overlay */
             background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://upload.wikimedia.org/wikipedia/en/thumb/b/be/Flag_of_England.svg/1200px-Flag_of_England.svg.png');
             background-size: cover;
             background-position: center;
@@ -49,24 +48,26 @@
             overflow: hidden;
         }
 
-        .auth-slideshow-wrapper {
+        /* --- UPDATED LOGO STYLING --- */
+        .auth-logo-wrapper {
             width: 100%;
-            height: 180px; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
             margin-bottom: 20px;
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            background-color: #000;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            padding: 10px 0;
         }
         
-        #authSlideImage {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            object-position: center; 
-            transition: opacity 0.8s ease-in-out;
-            display: block;
+        .auth-logo {
+            width: 130px; /* Logo Size */
+            height: auto;
+            /* Effect to make it pop/glow */
+            filter: drop-shadow(0 4px 8px rgba(55, 0, 60, 0.5)); 
+            transition: transform 0.3s ease;
+        }
+        
+        .auth-logo:hover {
+            transform: scale(1.05);
         }
 
         .input-group {
@@ -241,6 +242,31 @@
         .balance-label { font-size: 1em; opacity: 0.8; }
         .balance-value { font-size: 1.8em; font-weight: bold; color: #FFC300; }
         
+        /* --- NEW FILTER STYLES --- */
+        .filter-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        .filter-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            background-color: #f4f4f9;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #555;
+            transition: all 0.2s ease;
+        }
+        .filter-btn.active {
+            background-color: #003366;
+            color: #FFC300;
+            border: none;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+        }
+
         #investmentPlansContainer {
             display: grid;
             grid-template-columns: 1fr 1fr; 
@@ -257,8 +283,10 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            animation: fadeIn 0.3s ease-in-out;
         }
-        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
         .team-logo-container {
             width: 100%;
             height: 70px; 
@@ -273,8 +301,21 @@
         
         .team-name { 
             font-size: 1.1em; font-weight: bold; color: #003366; 
-            margin-bottom: 10px; padding-bottom: 5px; border-bottom: 1px solid #eee;
+            margin-bottom: 5px; padding-bottom: 5px; border-bottom: 1px solid #eee;
             white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        /* --- LIMIT BADGE STYLE --- */
+        .limit-badge {
+            background-color: #ff9800; /* Orange background */
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.75em;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
         .card-details { text-align: left; padding: 0 5px; font-size: 0.85em; }
@@ -540,9 +581,8 @@
     <div id="authSection">
         <div class="auth-box">
             
-            <h1 style="font-size: 40px; color: #d32f2f; margin: 0 0 15px 0; text-shadow: 1px 1px 2px #FFC300;">መልካም በዓል</h1>
-            <div class="auth-slideshow-wrapper">
-                <img id="authSlideImage" src="https://images.pexels.com/photos/3224164/pexels-photo-3224164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" alt="Gena">
+            <div class="auth-logo-wrapper">
+                <img class="auth-logo" src="https://upload.wikimedia.org/wikipedia/en/f/f2/Premier_League_Logo.svg" alt="Premier League">
             </div>
 
             <h2 id="authTitle">Login</h2>
@@ -595,7 +635,7 @@
                         <i class="fab fa-telegram-plane" style="background-color: #0088CC;"></i>
                         <span>Channel</span>
                     </div>
-                    <div class="function-item" onclick="window.open('https://t.me/John_customer_care', '_blank')">
+                    <div class="function-item" onclick="openSupportModal()">
                         <i class="fas fa-headset" style="background-color: #003366;"></i>
                         <span>Support</span>
                     </div>
@@ -606,6 +646,12 @@
                 </div>
 
                 <h3>Available Investment Plans</h3>
+                <div class="filter-tabs">
+                    <button class="filter-btn active" onclick="switchCategory('Pro')">Pro</button>
+                    <button class="filter-btn" onclick="switchCategory('VIP')">VIP</button>
+                    <button class="filter-btn" onclick="switchCategory('VVIP')">VVIP</button>
+                </div>
+                
                 <div id="investmentPlansContainer">
                     <p>Loading plans...</p>
                 </div>
@@ -756,7 +802,8 @@
                         <span><i class="fab fa-telegram-plane" style="color: #0088CC; margin-right: 10px;"></i>Telegram Channel</span>
                         <i class="fas fa-chevron-right"></i>
                     </div>
-                    <div class="option-item" onclick="window.open('https://t.me/John_customer_care', '_blank')">
+                    
+                    <div class="option-item" onclick="openSupportModal()">
                         <span><i class="fas fa-headset" style="color: #003366; margin-right: 10px;"></i>Customer Service</span>
                         <i class="fas fa-chevron-right"></i>
                     </div>
@@ -909,6 +956,12 @@
                 <p>Selected Logo URL: <span id="selectedLogoName" style="font-weight: bold; color: green;">None</span></p>
 
                 <input type="text" id="planName" placeholder="Team/Plan Name" required>
+                <select id="planCategory" style="width: 100%; padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 5px;">
+                    <option value="">Select Category</option>
+                    <option value="Pro">Pro (Standard)</option>
+                    <option value="VIP">VIP</option>
+                    <option value="VVIP">VVIP</option>
+                </select>
                 <input type="number" id="planPrice" placeholder="Investment Price (ETB)" required>
                 <input type="number" id="planProfit" placeholder="Daily Profit (ETB)" required>
                 <input type="number" id="planDays" placeholder="Maturity Days" required>
@@ -1040,6 +1093,24 @@
             <button onclick="submitChangePassword()" class="next-step" style="margin-top: 15px;">Update Password</button>
         </div>
     </div>
+    
+    <div id="supportModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeSupportModal()">&times;</span>
+            <h2>Customer Service</h2>
+            <p>Please select a support agent:</p>
+            <div class="management-options">
+                <div class="option-item" onclick="window.open('https://t.me/John_customer_care', '_blank')">
+                    <span><i class="fas fa-headset" style="color: #003366; margin-right: 10px;"></i>Main Support (John)</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+                <div class="option-item" onclick="window.open('https://t.me/epl_cs_admin', '_blank')">
+                    <span><i class="fas fa-user-shield" style="color: #E91E63; margin-right: 10px;"></i>Admin Support (EPL)</span>
+                    <i class="fas fa-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <div id="editPlanModal" class="modal">
         <div class="modal-content">
@@ -1116,8 +1187,11 @@
         let currentSelectedLogo = null; 
         let claimInterval = null; 
         let depositData = { amount: 0, method: '', account: '' };
-        let globalPaymentSettings = {}; // Store fetched payment methods here
+        let globalPaymentSettings = {}; 
         
+        let allInvestmentPlans = {}; 
+        let currentPlanFilter = 'Pro'; // Default filter
+
         function getEthiopiaTime() {
             return new Date(new Date().toLocaleString("en-US", { timeZone: "Africa/Addis_Ababa" }));
         }
@@ -1264,12 +1338,10 @@
             });
         }
 
-        // NEW: Load payment settings for everyone
         function loadPaymentSettings() {
             database.ref('admin_settings/payment_methods').on('value', (snapshot) => {
                 globalPaymentSettings = snapshot.val() || {};
                 
-                // If in admin mode, populate the inputs
                 if(currentUserPhone === 'Admin') {
                     if(globalPaymentSettings.Telebirr) {
                         document.getElementById('adminTeleName').value = globalPaymentSettings.Telebirr.name || '';
@@ -1287,7 +1359,6 @@
             });
         }
 
-        // NEW: Admin save settings
         function savePaymentSettings() {
             const teleName = document.getElementById('adminTeleName').value;
             const teleNum = document.getElementById('adminTeleNumber').value;
@@ -1314,9 +1385,8 @@
             document.getElementById('authSection').style.display = 'none';
             document.getElementById('message').innerText = '';
             
-            if(authSlideInterval) clearInterval(authSlideInterval);
+            // if(authSlideInterval) clearInterval(authSlideInterval); // Removed slideshow
             
-            // Always load payment settings
             loadPaymentSettings();
 
             if (isAdmin) {
@@ -1422,7 +1492,7 @@
             document.getElementById('adminPanel').style.display = 'none';
             document.getElementById('authSection').style.display = 'flex';
             
-            startAuthSlideshow();
+            // startAuthSlideshow(); // Removed Slideshow call
 
             isLoginMode = true; 
             document.getElementById('authTitle').innerText = 'Login';
@@ -1514,33 +1584,7 @@
             }
         });
 
-        // --- UPDATED AUTH SLIDESHOW IMAGES TO CHRISTMAS THEME ---
-        const authPlayerImages = [
-            "https://images.pexels.com/photos/3224164/pexels-photo-3224164.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1", // Christmas 1
-            "https://images.pexels.com/photos/5728297/pexels-photo-5728297.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1"  // Christmas 2
-        ];
-        // --------------------------------------------------------
-
-        let authSlideIndex = 0;
-        let authSlideInterval;
-
-        function startAuthSlideshow() {
-            const imgElement = document.getElementById('authSlideImage');
-            if(!imgElement) return;
-
-            if(authSlideInterval) clearInterval(authSlideInterval);
-            
-            imgElement.src = authPlayerImages[0];
-
-            authSlideInterval = setInterval(() => {
-                imgElement.style.opacity = 0;
-                setTimeout(() => {
-                    authSlideIndex = (authSlideIndex + 1) % authPlayerImages.length;
-                    imgElement.src = authPlayerImages[authSlideIndex];
-                    imgElement.style.opacity = 1;
-                }, 500); 
-            }, 3000); 
-        }
+        /* --- REMOVED AUTH SLIDESHOW JS LOGIC --- */
 
         const slideshowImages = [
             'https://images.pexels.com/photos/270085/pexels-photo-270085.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1', 
@@ -1609,7 +1653,6 @@
             document.getElementById('depositModalStep2').style.display = 'none';
         }
         
-        // MODIFIED PAYMENT SELECTION TO USE DB DATA
         function selectPaymentMethod(element, methodName) {
             document.querySelectorAll('.payment-option').forEach(el => el.classList.remove('selected'));
             element.classList.add('selected');
@@ -1617,7 +1660,6 @@
             let accNum = "Contact Admin";
             let accName = "Not Set";
             
-            // Get from global settings
             if(globalPaymentSettings[methodName]) {
                 accNum = globalPaymentSettings[methodName].number || "Contact Admin";
                 accName = globalPaymentSettings[methodName].name || methodName + " Account";
@@ -1677,7 +1719,6 @@
             document.getElementById('giftCodeInput').value = '';
             document.getElementById('giftModal').style.display = 'block';
             
-            // Reset button state
             const btn = document.getElementById('redeemGiftBtn');
             btn.disabled = false;
             btn.innerText = "Redeem Now";
@@ -1687,45 +1728,35 @@
             document.getElementById('giftModal').style.display = 'none';
         }
 
-        // --- UPDATED GIFT REDEMPTION LOGIC ---
         function submitGiftRedemption() {
             const code = document.getElementById('giftCodeInput').value.trim();
             if(!code) return alert("Please enter a code.");
             
             const btn = document.getElementById('redeemGiftBtn');
-            // 1. Immediately disable button to prevent double clicks
             btn.disabled = true;
             btn.innerText = "Processing...";
             
             const giftRef = database.ref('gift_codes/' + code);
             const userRef = database.ref('users/' + encodeURIComponent(currentUserPhone));
 
-            // 2. Use a TRANSACTION on the gift code itself to ensure atomicity
             giftRef.transaction((currentData) => {
-                // If code doesn't exist, return null to abort transaction (handled in completion)
                 if (currentData === null) return currentData;
+                if (currentData.status === 'used') return; 
                 
-                // If code is already used, abort transaction by returning undefined or same data
-                if (currentData.status === 'used') return; // aborts transaction
-                
-                // Check expiry logic inside transaction if needed, or update status
                 const now = Date.now();
-                if (currentData.expiresAt && now > currentData.expiresAt) return; // Expired, abort
+                if (currentData.expiresAt && now > currentData.expiresAt) return; 
                 
-                // If valid, mark as used immediately within the transaction
                 currentData.status = 'used';
                 currentData.usedBy = currentUserPhone;
                 currentData.usedAt = new Date().toISOString();
                 
-                return currentData; // Commit changes
+                return currentData; 
             }, (error, committed, snapshot) => {
                 if (error) {
                     alert("System Error: " + error.message);
                     btn.disabled = false;
                     btn.innerText = "Redeem Now";
                 } else if (!committed) {
-                    // Transaction aborted means code didn't exist, was already used, or expired
-                    // We need to fetch it once to see WHY it failed to give better error
                     giftRef.once('value').then(snap => {
                         const val = snap.val();
                         if (!val) alert("Invalid Gift Code.");
@@ -1737,8 +1768,6 @@
                         btn.innerText = "Redeem Now";
                     });
                 } else {
-                    // Transaction COMMITTED! We successfully claimed the code.
-                    // Now update the user balance safely.
                     const giftData = snapshot.val();
                     const amount = parseFloat(giftData.amount);
                     
@@ -1756,7 +1785,6 @@
                 }
             });
         }
-        // -------------------------------------
 
         function generateGiftCode() {
             const amount = parseFloat(document.getElementById('giftCodeAmount').value);
@@ -1951,17 +1979,14 @@
                     if (committed) {
                         const userData = snapshot.val();
                         
-                        // --- NEW LOGIC: ONE WITHDRAWAL PER DAY ---
-                        const todayStr = getEthiopiaTime().toDateString(); // Get current date in Ethiopia
+                        const todayStr = getEthiopiaTime().toDateString(); 
                         if (userData.lastWithdrawalDate === todayStr) {
                             return alert("Withdrawal Limit: You can only withdraw once per day.");
                         }
-                        // ------------------------------------------
 
                         if ((userData.totalInvestment || 0) <= 0) return alert("Withdrawal Failed: You must invest first.");
                         if (userData.balance < amount) return alert(`Insufficient balance. You have ${userData.balance.toFixed(2)} ETB.`);
 
-                        // Added lastWithdrawalDate update here
                         userRef.update({ 
                             balance: userData.balance - amount,
                             lastWithdrawalDate: todayStr 
@@ -2089,24 +2114,70 @@
             logTransactionHistory(phone, 'Team Commission', amount, 'Credit', 'Completed', description);
         }
 
-        let allInvestmentPlans = {}; 
+        /* --- NEW FILTERING LOGIC --- */
         function loadInvestmentPlans() {
             const container = document.getElementById('investmentPlansContainer');
             container.innerHTML = '<p>Loading plans...</p>';
             database.ref('investment_plans').on('value', (snapshot) => {
-                container.innerHTML = ''; 
-                const plans = snapshot.val();
-                allInvestmentPlans = plans || {}; 
-                if (!plans) {
-                    container.innerHTML = '<p>No investment plans currently available.</p>';
-                    return;
+                allInvestmentPlans = snapshot.val() || {}; 
+                renderPlans();
+            });
+        }
+        
+        function switchCategory(category) {
+            currentPlanFilter = category;
+            
+            // Update UI buttons
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(btn => {
+                if (btn.innerText === category) btn.classList.add('active');
+                else btn.classList.remove('active');
+            });
+            
+            renderPlans();
+        }
+
+        function renderPlans() {
+            const container = document.getElementById('investmentPlansContainer');
+            container.innerHTML = ''; 
+            
+            const plans = allInvestmentPlans;
+            if (!plans || Object.keys(plans).length === 0) {
+                container.innerHTML = '<p>No investment plans found.</p>';
+                return;
+            }
+
+            let hasMatches = false;
+
+            Object.keys(plans).forEach(key => {
+                const plan = plans[key];
+                const planName = plan.name ? plan.name.toUpperCase() : '';
+                const planCategory = plan.category; // Now using explicit category if available
+                let isMatch = false;
+
+                // FILTER LOGIC UPDATED TO USE CATEGORY
+                if (planCategory) {
+                    // New Plans with explicit category
+                    if (planCategory === currentPlanFilter) isMatch = true;
+                    // Special case: Pro button also shows "Pro" category
+                } else {
+                    // Legacy Plans (Fallback to name matching)
+                    if (currentPlanFilter === 'VVIP') {
+                        if (planName.includes('VVIP')) isMatch = true;
+                    } else if (currentPlanFilter === 'VIP') {
+                        if (planName.includes('VIP') && !planName.includes('VVIP')) isMatch = true;
+                    } else if (currentPlanFilter === 'Pro') {
+                        if (!planName.includes('VIP') && !planName.includes('VVIP')) isMatch = true;
+                    }
                 }
-                Object.keys(plans).forEach(key => {
-                    const plan = plans[key];
+
+                if (isMatch) {
+                    hasMatches = true;
                     const logoSource = plan.logoURL || 'https://via.placeholder.com/150x100?text=PL'; 
                     const totalReturn = (plan.dailyProfit && plan.maturityDays) ? (plan.dailyProfit * plan.maturityDays).toFixed(2) : 'N/A';
                     
-                    const limitText = plan.purchaseLimit ? `<span style="color:red; font-size: 0.8em; display:block;">(Limit: ${plan.purchaseLimit} per user)</span>` : '';
+                    const limitText = plan.purchaseLimit ? 
+                        `<div class="limit-badge"><i class="fas fa-exclamation-circle"></i> Limit: ${plan.purchaseLimit} / User</div>` : '';
 
                     const card = `
                         <div class="investment-card">
@@ -2123,8 +2194,12 @@
                         </div>
                     `;
                     container.innerHTML += card;
-                });
+                }
             });
+
+            if (!hasMatches) {
+                container.innerHTML = `<p style="grid-column: span 2; text-align: center; margin-top: 20px;">No ${currentPlanFilter} plans available right now.</p>`;
+            }
         }
         
         async function handleBuyPlan(planId, price) {
@@ -2440,26 +2515,34 @@
         async function approveDeposit(requestId, userPhone, amount, transactionId) {
             if (!confirm(`Approve ${amount} ETB for ${userPhone}?`)) return;
             
+            // Ensure amount is a number
+            const amountToAdd = parseFloat(amount);
+
             const reqSnapshot = await database.ref('deposit_requests/' + requestId).once('value');
             const reqData = reqSnapshot.val();
 
             const userRef = database.ref('users/' + encodeURIComponent(userPhone));
             try {
+                // IMPORTANT: This updates the balance directly in the database
                 await userRef.transaction((data) => {
                     if (data) {
-                        data.balance = (data.balance || 0) + parseFloat(amount);
-                        data.totalRecharge = (data.totalRecharge || 0) + parseFloat(amount);
+                        data.balance = (parseFloat(data.balance) || 0) + amountToAdd;
+                        data.totalRecharge = (parseFloat(data.totalRecharge) || 0) + amountToAdd;
                         return data;
+                    } else {
+                        return data; // User not found
                     }
                 });
                 
+                // Mark request as Approved
                 await database.ref('deposit_requests/' + requestId).update({ status: 'Approved', approvedBy: currentUserPhone });
 
+                // Mark history as Completed
                 if(reqData && reqData.historyId) {
                     await database.ref('transaction_history/' + encodeURIComponent(userPhone) + '/' + reqData.historyId).update({ status: 'Completed' });
                 }
 
-                alert('Deposit Approved.');
+                alert('Deposit Approved & Balance Added.');
             } catch (e) { alert('Error: ' + e.message); }
         }
 
@@ -2563,24 +2646,26 @@
         }
         function createInvestmentPlan() {
             const name = document.getElementById('planName').value.trim();
+            const category = document.getElementById('planCategory').value; // Get Category
             const price = parseFloat(document.getElementById('planPrice').value);
             const profit = parseFloat(document.getElementById('planProfit').value);
             const days = parseInt(document.getElementById('planDays').value);
             const limit = parseInt(document.getElementById('planLimit').value); 
 
-            if (!name || isNaN(price) || isNaN(profit) || isNaN(days) || isNaN(limit) || !currentSelectedLogo) {
-                return alert('Please fill all fields, including the Limit, and select a logo.');
+            if (!name || !category || isNaN(price) || isNaN(profit) || isNaN(days) || isNaN(limit) || !currentSelectedLogo) {
+                return alert('Please fill all fields, select a Category and a Logo.');
             }
             
             database.ref('investment_plans').push({ 
                 name, 
+                category, // Save Category
                 price, 
                 dailyProfit: profit, 
                 maturityDays: days, 
                 purchaseLimit: limit, 
                 logoURL: currentSelectedLogo 
             });
-            alert('Plan Created Successfully with Limit!');
+            alert('Plan Created Successfully with Category!');
         }
         function loadAdminInvestmentManagement() {
             const container = document.getElementById('existingPlansList');
@@ -2589,7 +2674,7 @@
                 container.innerHTML = plans ? '' : '<p>No plans.</p>';
                 if (plans) Object.keys(plans).forEach(key => {
                     const plan = plans[key];
-                    container.innerHTML += `<div class="plan-item"><div>${plan.name} (${plan.price} ETB) - Limit: ${plan.purchaseLimit || 'None'}</div><div><button class="delete-btn" onclick="deletePlan('${key}')">Delete</button></div></div>`;
+                    container.innerHTML += `<div class="plan-item"><div>${plan.name} (${plan.category || 'Legacy'}) - ${plan.price} ETB</div><div><button class="delete-btn" onclick="deletePlan('${key}')">Delete</button></div></div>`;
                 });
             });
         }
@@ -2647,6 +2732,15 @@
         function joinTelegramAndClose() {
             window.open('https://t.me/+8uz4Rc7Na-hlYmU8', '_blank');
             closeTelegramPopup();
+        }
+
+        /* --- NEW FUNCTIONS FOR SUPPORT MODAL --- */
+        function openSupportModal() {
+            document.getElementById('supportModal').style.display = 'block';
+        }
+        
+        function closeSupportModal() {
+            document.getElementById('supportModal').style.display = 'none';
         }
 
         function openTeamDetailsModal() {
@@ -2711,9 +2805,6 @@
             if (refParam) {
                 if (isLoginMode) toggleAuthMode();
                 document.getElementById('authReferralCode').value = refParam;
-            }
-            if (document.getElementById('authSection').style.display !== 'none') {
-                startAuthSlideshow();
             }
         });
     </script>
